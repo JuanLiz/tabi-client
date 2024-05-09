@@ -6,25 +6,19 @@ import { Button, Form, Input } from 'antd';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-type AuthForm = {
-    userName: string;
-    password: string;
-}
-
 export default function Page() {
 
-    // auth
+    // Use auth hook
     const auth = useAuth();
 
     // Avoid interceptor 
     const axiosInstance = axios.create();
 
 
-    const onFinishLogin: FormProps<AuthForm>['onFinish'] = async (values) => {
-
+    // Login function
+    const onFinishLogin: FormProps<AuthRequest>['onFinish'] = async (values) => {
         try {
             const form: FormData = new FormData();
-
             if (values?.userName.includes('@')) {
                 form.append('Email', values.userName);
             }
@@ -50,7 +44,7 @@ export default function Page() {
 
     };
 
-    const onFinishLoginFailed: FormProps<AuthForm>['onFinishFailed'] = (errorInfo) => {
+    const onFinishLoginFailed: FormProps<AuthRequest>['onFinishFailed'] = (errorInfo) => {
         console.log('Failed:', errorInfo);
     };
 
