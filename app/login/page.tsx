@@ -23,6 +23,10 @@ export default function Page() {
     // User type
     const [userType, setUserType] = useState<UserType>({ userTypeID: 1, name: '' });
 
+    // Loading button states
+    const [loginButtonLoading, setLoginButtonLoading] = useState<boolean>(false);
+    const [registerButtonLoading, setRegisterButtonLoading] = useState<boolean>(false);
+
     // Use auth hook
     const auth = useAuth();
 
@@ -73,12 +77,14 @@ export default function Page() {
     // Authenticate (for both login and after register)
     const authenticate = async (values: AuthRequest) => {
         try {
+            setLoginButtonLoading(true);
+            setRegisterButtonLoading(true);
             const form: FormData = new FormData();
             if (values?.username.includes('@')) {
                 form.append('Email', values.username);
             }
             else {
-                form.append('UserName', values.username);
+                form.append('Username', values.username);
             }
 
             form.append('Password', values.password);
@@ -90,6 +96,8 @@ export default function Page() {
             // Set cookies
             Cookies.set('token', data.token);
             Cookies.set('user', JSON.stringify(data));
+            setLoginButtonLoading(false);
+            setRegisterButtonLoading(false);
 
             window.location.href = '/dashboard';
 
@@ -103,11 +111,12 @@ export default function Page() {
     // Login function
     const onFinishLogin: FormProps<AuthRequest>['onFinish'] = async (values) => {
         try {
+            
             authenticate({
                 username: values.username,
                 password: values.password,
             });
-
+            
         } catch (error) {
             console.log('Failed:', error);
         }
@@ -121,6 +130,7 @@ export default function Page() {
     // Register function
     const onFinishRegister: FormProps<User>['onFinish'] = async (values) => {
         try {
+            setRegisterButtonLoading(true);
             console.log('Register values:', values, userType);
 
             // Create form data
@@ -130,6 +140,7 @@ export default function Page() {
             form.append('Email', values.email);
             form.append('Password', values.password);
             form.append('UserTypeID', userType.userTypeID.toString());
+            if (values.username) form.append('Username', values.username);
             if (values.documentTypeID) form.append('DocumentTypeID', values.documentTypeID.toString());
             if (values.documentNumber) form.append('DocumentNumber', values.documentNumber);
             if (values.phone) form.append('Phone', values.phone);
@@ -138,7 +149,7 @@ export default function Page() {
             // Send request
             const { data }: { data: UserResponse } = await axiosInstance.post('/api/Auth/Register', form);
 
-            console.log('Success:', data);
+            setRegisterButtonLoading(false);
 
             // Authenticate user
             authenticate({
@@ -360,7 +371,7 @@ export default function Page() {
                                 }
 
                                 <Form.Item>
-                                    <Button className='w-full mt-5' type="primary" htmlType="submit">
+                                    <Button className='w-full mt-5' type="primary" htmlType="submit" loading={registerButtonLoading}>
                                         Registrarse
                                     </Button>
                                 </Form.Item>
@@ -395,7 +406,7 @@ export default function Page() {
                                     </Form.Item>
 
                                     <Form.Item>
-                                        <Button className='w-full mt-5' type="primary" htmlType="submit">
+                                        <Button className='w-full mt-5' type="primary" htmlType="submit" loading={loginButtonLoading}>
                                             Iniciar sesión
                                         </Button>
                                     </Form.Item>
