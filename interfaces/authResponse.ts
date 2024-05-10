@@ -2,7 +2,7 @@ interface AuthResponse {
     userID: number;
     token: string;
     email: string;
-    userName?: string;
+    username?: string;
     name: string;
     lastName: string;
     userTypeID: number;

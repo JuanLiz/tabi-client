@@ -1,4 +1,4 @@
 interface AuthRequest {
-    userName: string;
+    username: string;
     password: string;
 }

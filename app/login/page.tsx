@@ -11,11 +11,17 @@ import { FilePdfOutlined } from '@ant-design/icons';
 
 export default function Page() {
 
+    // User types
+    const [userTypes, setUserTypes] = useState<UserType[]>([]);
+
+    // Document types
+    const [documentTypes, setDocumentTypes] = useState<DocType[]>([]);
+
     // Operation state (login or register)
     const [operation, setOperation] = useState<'Iniciar sesión' | 'Registrarse'>('Iniciar sesión');
 
     // User type
-    const [userType, setUserType] = useState<'Caficultor' | 'Jugador'>('Caficultor');
+    const [userType, setUserType] = useState<UserType>({ userTypeID: 1, name: '' });
 
     // Use auth hook
     const auth = useAuth();
@@ -24,15 +30,55 @@ export default function Page() {
     const axiosInstance = axios.create();
 
 
-    // Login function
-    const onFinishLogin: FormProps<AuthRequest>['onFinish'] = async (values) => {
+    // == Types API Functions == //
+
+    // Get user types
+    const getUserTypes = async () => {
+        try {
+            const { data } = await axiosInstance.get('/api/UserType');
+            console.log('User types:', data);
+            setUserTypes(data);
+            // Set default user type as the first one
+            setUserType(data[0]);
+        } catch (error) {
+            console.log('Failed:', error);
+        }
+    };
+
+    // Get document types
+    const getDocumentTypes = async () => {
+        try {
+            const { data } = await axiosInstance.get('/api/DocumentType');
+            const shortNames: { [key: string]: string } = {
+                'Cédula de ciudadanía': 'CC',
+                'Cédula de extranjería': 'CE',
+                'Tarjeta de identidad': 'TI',
+                'Pasaporte': 'PA',
+            };
+            const docTypes = data.map((docType: DocType) => ({
+                ...docType,
+                shortName: shortNames[docType.name],
+            }));
+            console.log('Document types:', docTypes);
+            setDocumentTypes(docTypes);
+
+        } catch (error) {
+            console.log('Failed:', error);
+        }
+    };
+
+
+    //== Form functions ==//
+
+    // Authenticate (for both login and after register)
+    const authenticate = async (values: AuthRequest) => {
         try {
             const form: FormData = new FormData();
-            if (values?.userName.includes('@')) {
-                form.append('Email', values.userName);
+            if (values?.username.includes('@')) {
+                form.append('Email', values.username);
             }
             else {
-                form.append('UserName', values.userName);
+                form.append('UserName', values.username);
             }
 
             form.append('Password', values.password);
@@ -51,12 +97,73 @@ export default function Page() {
             console.log('Failed:', error);
         }
 
+
+    };
+
+    // Login function
+    const onFinishLogin: FormProps<AuthRequest>['onFinish'] = async (values) => {
+        try {
+            authenticate({
+                username: values.username,
+                password: values.password,
+            });
+
+        } catch (error) {
+            console.log('Failed:', error);
+        }
+
     };
 
     const onFinishLoginFailed: FormProps<AuthRequest>['onFinishFailed'] = (errorInfo) => {
         console.log('Failed:', errorInfo);
     };
 
+    // Register function
+    const onFinishRegister: FormProps<User>['onFinish'] = async (values) => {
+        try {
+            console.log('Register values:', values, userType);
+
+            // Create form data
+            const form: FormData = new FormData();
+            form.append('Name', values.name);
+            form.append('LastName', values.lastName);
+            form.append('Email', values.email);
+            form.append('Password', values.password);
+            form.append('UserTypeID', userType.userTypeID.toString());
+            if (values.documentTypeID) form.append('DocumentTypeID', values.documentTypeID.toString());
+            if (values.documentNumber) form.append('DocumentNumber', values.documentNumber);
+            if (values.phone) form.append('Phone', values.phone);
+            if (values.address) form.append('Address', values.address);
+
+            // Send request
+            const { data }: { data: UserResponse } = await axiosInstance.post('/api/Auth/Register', form);
+
+            console.log('Success:', data);
+
+            // Authenticate user
+            authenticate({
+                username: values.email,
+                password: values.password
+            });
+
+        } catch (error) {
+            console.log('Failed:', error);
+        }
+    };
+
+    const onFinishRegisterFailed: FormProps<User>['onFinishFailed'] = (errorInfo) => {
+        console.log('Failed:', errorInfo);
+    };
+
+
+    //=== UseEffects ===//
+
+
+    // Load types on component mount
+    useEffect(() => {
+        getUserTypes();
+        getDocumentTypes();
+    }, []);
 
     // UseEffect for log the current user type
     useEffect(() => {
@@ -91,46 +198,53 @@ export default function Page() {
                         <>
                             <h2 className='text-brown text-2xl font-extrabold'>Regístrate en Tabi</h2>
 
-                            <Segmented
-                                block
-                                className='w-full'
-                                value={userType}
-                                onChange={setUserType}
-                                options={[
-                                    {
-                                        label: (
-                                            <div className='py-4 flex items-center gap-4'>
-                                                <div className='hidden md:flex '><FilePdfOutlined className='text-4xl' /></div>
-                                                <div className='flex flex-col items-start gap-2'>
-                                                    <p className='text-wrap text-start font-bold leading-tight'>Quiero gestionar mis cultivos</p>
-                                                    <p className='text-wrap text-xs text-start text-gray-500'>Gestiona tus cultivos de café de manera eficiente</p>
-                                                </div>
-                                            </div>
-                                        ),
-                                        value: 'Caficultor',
-                                    },
-                                    {
-                                        label: (
-                                            <div className='py-4 flex items-center gap-4'>
-                                                <div className='hidden md:flex '><FilePdfOutlined className='text-4xl' /></div>
-                                                <div className='flex flex-col items-start gap-2'>
-                                                    <p className='text-wrap text-start font-bold leading-tight'>Quiero jugar a Tabiland </p>
-                                                    <p className='text-wrap text-xs text-start text-gray-500'> Juega y aprende sobre el cultivo de café</p>
-                                                </div>
-                                            </div>
-                                        ),
-                                        value: 'Jugador',
-                                    },
-                                ]}
-                            />
+                            {
+                                userTypes.length > 0 && (
+                                    <Segmented
+                                        block
+                                        className='w-full'
+                                        value={userType}
+                                        onChange={setUserType}
+                                        options={
+                                            // Set name and label for each user type
+                                            userTypes.map((userType) => ({
+                                                key: userType.userTypeID,
+                                                userTypeID: userType.userTypeID,
+                                                name: userType.name,
+                                                value: userType,
+                                                label: userType.name === 'Jugador' ? (
+                                                    <div className='py-4 flex items-center gap-4'>
+                                                        <div className='hidden md:flex '><FilePdfOutlined className='text-4xl' /></div>
+                                                        <div className='flex flex-col items-start gap-2'>
+                                                            <p className='text-wrap text-start font-bold leading-tight'>Quiero jugar a Tabiland </p>
+                                                            <p className='text-wrap text-xs text-start text-gray-500'> Juega y aprende sobre el cultivo de café</p>
+                                                        </div>
+                                                    </div>
+
+                                                ) : userType.name === 'Caficultor'
+                                                    ? (
+                                                        <div className='py-4 flex items-center gap-4'>
+                                                            <div className='hidden md:flex '><FilePdfOutlined className='text-4xl' /></div>
+                                                            <div className='flex flex-col items-start gap-2'>
+                                                                <p className='text-wrap text-start font-bold leading-tight'>Quiero gestionar mis cultivos</p>
+                                                                <p className='text-wrap text-xs text-start text-gray-500'>Gestiona tus cultivos de café de manera eficiente</p>
+                                                            </div>
+                                                        </div>
+                                                    )
+                                                    : null
+                                            }))
+                                        }
+
+                                    />
+                                )
+                            }
 
                             <Form
                                 name="registerForm"
                                 layout='vertical'
                                 size='middle'
-                                initialValues={{ remember: true }}
-                                onFinish={onFinishLogin}
-                                onFinishFailed={onFinishLoginFailed}
+                                onFinish={onFinishRegister}
+                                onFinishFailed={onFinishRegisterFailed}
                                 className='w-full'
                             >
                                 <div className='md:flex w-full gap-5'>
@@ -154,52 +268,60 @@ export default function Page() {
                                 </div>
                                 <div className='md:flex w-full gap-5'>
                                     {
-                                        userType === 'Caficultor' ? (
+                                        userType.name === 'Caficultor' ? (
                                             <Form.Item label="Documento de identidad" className='md:w-1/2'>
                                                 <Space.Compact className='w-full'>
                                                     <Form.Item
-                                                        name={['document', 'type']}
-                                                        rules={[{ required: userType === 'Caficultor', message: 'Selecciona el tipo de documento' }]}
+                                                        name='documentTypeID'
+                                                        rules={[{ required: userType.name === 'Caficultor', message: 'Selecciona el tipo de documento' }]}
                                                         className='w-2/5 h-full'
                                                     >
-                                                        <Select placeholder="Tipo">
-                                                            <Select.Option value="cc">CC</Select.Option>
-                                                            <Select.Option value="ce">CE</Select.Option>
-                                                            <Select.Option value="ti">TI</Select.Option>
+                                                        <Select
+                                                            loading={documentTypes.length === 0}
+                                                            disabled={documentTypes.length === 0}
+                                                            placeholder="Tipo"
+                                                        >
+
+                                                            {// Check if doctypes is ready
+                                                                documentTypes.length > 0 && (
+                                                                    documentTypes.map((docType) => (docType.shortName && (
+                                                                        <Select.Option key={docType.documentTypeID} value={docType.documentTypeID}>{docType?.shortName}</Select.Option>
+                                                                    )))
+                                                                )
+                                                            }
 
                                                         </Select>
                                                     </Form.Item>
                                                     <Form.Item
-                                                        name={['document', 'number']}
+                                                        name={'documentNumber'}
                                                         className='w-3/5 h-full'
-                                                        rules={[{ required: userType === 'Caficultor', message: 'Ingresa un número de documento válido' }]}
+                                                        rules={[{ required: userType.name === 'Caficultor', message: 'Ingresa un número de documento válido' }]}
                                                     >
                                                         <Input />
                                                     </Form.Item>
                                                 </Space.Compact>
                                             </Form.Item>
                                         ) : (
-                                            // TODO Debouncing to check username availability
                                             <Form.Item
                                                 className='md:w-1/2'
                                                 label="Nombre de usuario"
-                                                name="birthDate"
-                                                rules={[{ required: userType === 'Jugador', message: 'Por favor, ingresa un nombre de usuario' }]}
+                                                name="username"
+                                                rules={[{ required: userType.name === 'Jugador', message: 'Por favor, ingresa un nombre de usuario' }]}
                                             >
                                                 <Input />
                                             </Form.Item>
                                         )
                                     }
 
-
                                     <Form.Item className='md:w-1/2'
                                         label="Correo electrónico"
                                         name="email"
-                                        rules={[{ required: true, message: 'Por favor, ingresa tu correo!' }]}
+                                        rules={[{ required: true, message: 'Por favor, ingresa tu correo!' },
+                                        { type: 'email', message: 'Ingresa un correo válido' }
+                                        ]}
                                     >
                                         <Input />
                                     </Form.Item>
-
 
                                 </div>
 
@@ -213,13 +335,13 @@ export default function Page() {
                                 </Form.Item>
 
                                 {
-                                    userType === 'Caficultor' && (
+                                    userType.name === 'Caficultor' && (
                                         <div className='md:flex w-full gap-5'>
                                             <Form.Item
                                                 className='md:w-1/2'
                                                 label="Dirección"
                                                 name="address"
-                                                rules={[{ required: userType === 'Caficultor', message: 'Por favor, ingresa tu dirección!' }]}
+                                                rules={[{ required: userType.name === 'Caficultor', message: 'Por favor, ingresa tu dirección!' }]}
                                             >
                                                 <Input />
                                             </Form.Item>
@@ -228,9 +350,9 @@ export default function Page() {
                                                 className='md:w-1/2'
                                                 label="Teléfono"
                                                 name="phone"
-                                                rules={[{ type: 'number', required: userType === 'Caficultor', message: 'Por favor, ingresa tu teléfono!' }]}
+                                                rules={[{ required: userType.name === 'Caficultor', message: 'Por favor, ingresa tu teléfono!' }]}
                                             >
-                                                <Input />
+                                                <Input type='number' maxLength={10} />
                                             </Form.Item>
 
                                         </div>
@@ -252,14 +374,13 @@ export default function Page() {
                                     name="loginForm"
                                     layout='vertical'
                                     size='large'
-                                    initialValues={{ remember: true }}
                                     onFinish={onFinishLogin}
                                     onFinishFailed={onFinishLoginFailed}
                                     className='w-full'
                                 >
                                     <Form.Item
                                         label="Usuario o correo electrónico"
-                                        name="userName"
+                                        name="username"
                                         rules={[{ required: true, message: 'Por favor, ingresa tu usuario o correo!' }]}
                                     >
                                         <Input />
