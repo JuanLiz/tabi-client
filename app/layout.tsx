@@ -1,3 +1,4 @@
+import { AntdRegistry } from '@ant-design/nextjs-registry';
 import { ConfigProvider } from 'antd';
 import type { Metadata } from "next";
 import { Mulish } from "next/font/google";
@@ -23,27 +24,34 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body className={`${mulish.className} ${mulish.variable} font-sans subpixel-antialiased`}>
-        <ConfigProvider
-          theme={{
-            token: {
-              // Seed Token
-              fontFamily: "Mulish",
+        <AntdRegistry>
+          <ConfigProvider
+            theme={{
+              token: {
+                // Seed Token
+                fontFamily: "Mulish",
 
-              borderRadius: 8,
+                borderRadius: 8,
 
-              // Colors
-              colorPrimary: "#63A91F",
-              colorInfo: "#63A91F",
-              colorLink: "#63A91F",
-              colorTextBase: "#412F26",
-              colorBgBase: "#F4EEE6",
+                // Colors
+                colorPrimary: "#63A91F",
+                colorInfo: "#63A91F",
+                colorLink: "#63A91F",
+                colorTextBase: "#412F26",
+                //colorBgBase: "#f7fff6",
 
 
-            },
-          }}
-        >
-          {children}
-        </ConfigProvider>
+              },
+              components: {
+                Form: {
+                  marginLG: 8
+                },
+              }
+            }}
+          >
+            {children}
+          </ConfigProvider>
+        </AntdRegistry>
       </body>
     </html>
   );

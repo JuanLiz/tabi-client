@@ -3,18 +3,30 @@
 @tailwind utilities;
 
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+/*Select cards*/
+
+.radio-custom .ant-radio-wrapper {
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  padding: 4px;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+.radio-custom .ant-radio-wrapper-checked {
+  border: 2px solid blue;
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.radio-custom .ant-radio {
+  position: absolute;
+  left: -9999px;
+  overflow: hidden;
+}
+
+.radio-custom .ant-radio + * {
+  display: block;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 8px;
+  overflow: hidden;
 }
