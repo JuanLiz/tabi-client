@@ -5,6 +5,7 @@ import { Mulish } from "next/font/google";
 import "./globals.css";
 
 
+
 const mulish = Mulish({
   subsets: ["latin"],
   display: "swap",

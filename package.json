@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ant-design/nextjs-registry": "^1.0.0",
+    "@icon-park/react": "^1.4.2",
     "antd": "^5.17.0",
     "axios": "^1.6.8",
     "express": "^4.19.2",

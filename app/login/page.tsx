@@ -2,12 +2,18 @@
 
 import { useAuth } from '@/hooks/useAuth';
 import type { FormProps } from 'antd';
-import { Button, Form, Input, Segmented, Select, Space } from 'antd';
+import { Alert, Button, Form, Input, Segmented, Select, Space } from 'antd';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
-// Antd icons
-import { FilePdfOutlined } from '@ant-design/icons';
+
+// Chinese spyware stuff (TikTok icons)
+import { GameThree, Leaves } from '@icon-park/react';
+
+// Pattern image
+import PatternImg from "@/public/img/pattern-optimized.png";
+
 
 export default function Page() {
 
@@ -26,6 +32,13 @@ export default function Page() {
     // Loading button states
     const [loginButtonLoading, setLoginButtonLoading] = useState<boolean>(false);
     const [registerButtonLoading, setRegisterButtonLoading] = useState<boolean>(false);
+
+    // Error states
+    const [loginError, setLoginError] = useState<string | null>(null);
+    const [registerError, setRegisterError] = useState<string | null>(null);
+    // Visibility
+    const [loginErrorVisible, setLoginErrorVisible] = useState<boolean>(false);
+    const [registerErrorVisible, setRegisterErrorVisible] = useState<boolean>(false);
 
     // Use auth hook
     const auth = useAuth();
@@ -111,12 +124,12 @@ export default function Page() {
     // Login function
     const onFinishLogin: FormProps<AuthRequest>['onFinish'] = async (values) => {
         try {
-            
+
             authenticate({
                 username: values.username,
                 password: values.password,
             });
-            
+
         } catch (error) {
             console.log('Failed:', error);
         }
@@ -185,14 +198,17 @@ export default function Page() {
 
         <div className="w-screen h-full lg:h-screen flex flex-col-reverse lg:flex-row justify-center lg:items-center">
             <div
-                className='w-full lg:w-1/2 h-full px-8 py-12 lg:p-16 flex flex-col justify-center gap-6 bg-green-300'
+                className='w-full lg:w-1/2 h-full  flex flex-col justify-between bg-green-300'
             >
-                <p className='text-brown text-2xl lg:text-5xl font-extrabold lg:leading-snug'>
-                    Simplifica tus procesos de cultivo de café
-                </p>
-                <p className='text-brown font-regular text-lg lg:text-2xl'>
-                    Con Tabi gestionas tu cafetal de manera precisa y eficiente.
-                </p>
+                <div className='h-full mx-8 my-12 lg:m-16 flex flex-col justify-center items-center gap-6'>
+                    <p className='text-brown text-2xl lg:text-5xl font-extrabold lg:leading-snug'>
+                        Simplifica tus procesos de cultivo de café
+                    </p>
+                    <p className='text-brown font-regular text-lg lg:text-2xl'>
+                        Con Tabi gestionas tu cafetal de manera precisa y eficiente.
+                    </p>
+                </div>
+                <Image src={PatternImg} alt='Pattern' className='' />
             </div>
             <div className='w-full lg:w-1/2 h-full flex flex-col justify-center items-center gap-4 px-6 py-12 lg:p-16'>
                 <Segmented
@@ -225,7 +241,7 @@ export default function Page() {
                                                 value: userType,
                                                 label: userType.name === 'Jugador' ? (
                                                     <div className='py-4 flex items-center gap-4'>
-                                                        <div className='hidden md:flex '><FilePdfOutlined className='text-4xl' /></div>
+                                                        <div className='hidden md:flex '><GameThree theme="outline" size="32" fill="#412F26" /></div>
                                                         <div className='flex flex-col items-start gap-2'>
                                                             <p className='text-wrap text-start font-bold leading-tight'>Quiero jugar a Tabiland </p>
                                                             <p className='text-wrap text-xs text-start text-gray-500'> Juega y aprende sobre el cultivo de café</p>
@@ -235,7 +251,7 @@ export default function Page() {
                                                 ) : userType.name === 'Caficultor'
                                                     ? (
                                                         <div className='py-4 flex items-center gap-4'>
-                                                            <div className='hidden md:flex '><FilePdfOutlined className='text-4xl' /></div>
+                                                            <div className='hidden md:flex '><Leaves theme="outline" size="32" fill="#412F26" /></div>
                                                             <div className='flex flex-col items-start gap-2'>
                                                                 <p className='text-wrap text-start font-bold leading-tight'>Quiero gestionar mis cultivos</p>
                                                                 <p className='text-wrap text-xs text-start text-gray-500'>Gestiona tus cultivos de café de manera eficiente</p>
@@ -381,6 +397,10 @@ export default function Page() {
                         (
                             <>
                                 <h2 className='text-brown text-2xl font-extrabold'>Bienvenido a Tabi</h2>
+                                <Alert message="Error:" type="error" showIcon closable />
+                                {loginErrorVisible && (
+                                    <Alert message="Alert Message Text" type="error" showIcon closable afterClose={() => setLoginErrorVisible(false)} />
+                                )}
                                 <Form
                                     name="loginForm"
                                     layout='vertical'
