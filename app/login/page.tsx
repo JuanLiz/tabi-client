@@ -1,6 +1,5 @@
 'use client'
 
-import { useAuth } from '@/hooks/useAuth';
 import type { FormProps } from 'antd';
 import { Alert, Button, Form, Input, Segmented, Select, Space } from 'antd';
 import axios from 'axios';
@@ -16,7 +15,7 @@ import PatternImg from "@/public/img/pattern-optimized.png";
 import Logo from '@/public/img/tabi-logo.svg';
 
 
-export default function Page() {
+export default function LoginPage() {
 
     // User types
     const [userTypes, setUserTypes] = useState<UserType[]>([]);
@@ -40,9 +39,6 @@ export default function Page() {
     // Visibility
     const [loginErrorVisible, setLoginErrorVisible] = useState<boolean>(false);
     const [registerErrorVisible, setRegisterErrorVisible] = useState<boolean>(false);
-
-    // Use auth hook
-    const auth = useAuth();
 
     // Avoid interceptor 
     const axiosInstance = axios.create();
