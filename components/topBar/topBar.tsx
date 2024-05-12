@@ -75,7 +75,7 @@ export default function TopBar() {
 
 
     return (
-        <header className="sticky top-0 z-1 w-full flex justify-between items-center px-8 py-4 bg-green-300/20 lg:bg-white text-brown border border-b border-brown/15  ">
+        <header className="sticky top-0 z-1 w-full flex justify-between items-center px-8 py-4 bg-green-300 lg:bg-white text-brown border border-b border-brown/15  ">
             <div>
                 <Image src={Logo} alt="Tabi Logo" height={30} />
             </div>

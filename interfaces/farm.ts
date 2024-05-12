@@ -1,12 +1,11 @@
 interface Farm {
-    userID: number;
     name: string;
-    address?: string;
+    address: string;
     hectares: number;
-    isActive: boolean;
 }
 
 interface FarmResponse extends Farm {
+    userID: number;
     farmID: number;
     user: UserResponse;
 }

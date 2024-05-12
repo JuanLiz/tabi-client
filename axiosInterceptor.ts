@@ -8,9 +8,8 @@ axiosInstance.interceptors.request.use(
         const token = Cookies.get('token');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
-        } else {
-            console.log('NO TOKEN');
         }
+
         return config;
     },
     function (error) {
@@ -29,7 +28,6 @@ axiosInstance.interceptors.response.use(
         // any status codes that falls outside the range of 2xx cause this function
         // to trigger
         let res = error.response;
-        console.log('ERROR', res);
         if ((res.status === 401 || res.status === 403) && res.config && !res.config.__isRetryRequest) {
             return new Promise((resolve, reject) => {
                 window.location.href = '/login';

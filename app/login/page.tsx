@@ -50,7 +50,6 @@ export default function LoginPage() {
     const getUserTypes = async () => {
         try {
             const { data } = await axiosInstance.get('/api/UserType');
-            console.log('User types:', data);
             setUserTypes(data);
             // Set default user type as the first one
             setUserType(data[0]);
@@ -73,7 +72,6 @@ export default function LoginPage() {
                 ...docType,
                 shortName: shortNames[docType.name],
             }));
-            console.log('Document types:', docTypes);
             setDocumentTypes(docTypes);
 
         } catch (error) {
@@ -116,7 +114,6 @@ export default function LoginPage() {
         }
         catch (error: any) {
             const data = error.response;
-            console.log('Error:', data.status);
             setLoginErrorVisible(true);
             setLoginError(
                 data.status === 400
@@ -177,7 +174,6 @@ export default function LoginPage() {
 
         } catch (error: any) {
             const data = error.response.data;
-            console.log('Error:', data.message);
             setRegisterErrorVisible(true);
             setRegisterError(
                 data.message === 'Email is already taken'
@@ -372,7 +368,7 @@ export default function LoginPage() {
                                         { type: 'email', message: 'Ingresa un correo válido' }
                                         ]}
                                     >
-                                        <Input />
+                                        <Input type='email'/>
                                     </Form.Item>
 
                                 </div>
