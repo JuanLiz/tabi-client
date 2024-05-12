@@ -13,6 +13,7 @@ import { GameThree, Leaves } from '@icon-park/react';
 
 // Pattern image
 import PatternImg from "@/public/img/pattern-optimized.png";
+import Logo from '@/public/img/tabi-logo.svg';
 
 
 export default function Page() {
@@ -89,50 +90,58 @@ export default function Page() {
 
     // Authenticate (for both login and after register)
     const authenticate = async (values: AuthRequest) => {
+
+        setLoginButtonLoading(true);
+        setRegisterButtonLoading(true);
+        const form: FormData = new FormData();
+        if (values?.username.includes('@')) {
+            form.append('Email', values.username);
+        }
+        else {
+            form.append('Username', values.username);
+        }
+
+        form.append('Password', values.password);
+
         try {
-            setLoginButtonLoading(true);
-            setRegisterButtonLoading(true);
-            const form: FormData = new FormData();
-            if (values?.username.includes('@')) {
-                form.append('Email', values.username);
-            }
-            else {
-                form.append('Username', values.username);
-            }
-
-            form.append('Password', values.password);
-
-            const { data }: { data: AuthResponse } = await axiosInstance.post('/api/Auth/Login', form);
-
-            console.log('Success:', data);
-
+            const data = await axiosInstance.post('/api/Auth/Login', form);
             // Set cookies
-            Cookies.set('token', data.token);
-            Cookies.set('user', JSON.stringify(data));
+            if (data.status === 200) {
+                Cookies.set('token', data.data.token);
+                Cookies.set('user', JSON.stringify(data.data));
+                setLoginButtonLoading(false);
+                setRegisterButtonLoading(false);
+
+                setLoginErrorVisible(false);
+                setRegisterErrorVisible(false);
+
+                window.location.href = '/dashboard';
+            }
+        }
+        catch (error: any) {
+            const data = error.response;
+            console.log('Error:', data.status);
+            setLoginErrorVisible(true);
+            setLoginError(
+                data.status === 400
+                    ? "Error al iniciar sesión: Usuario o contraseña incorrectos."
+                    : "Error al iniciar sesión. Inténtalo de nuevo más tarde."
+            );
             setLoginButtonLoading(false);
             setRegisterButtonLoading(false);
-
-            window.location.href = '/dashboard';
-
-        } catch (error) {
-            console.log('Failed:', error);
         }
+
 
 
     };
 
     // Login function
     const onFinishLogin: FormProps<AuthRequest>['onFinish'] = async (values) => {
-        try {
 
-            authenticate({
-                username: values.username,
-                password: values.password,
-            });
-
-        } catch (error) {
-            console.log('Failed:', error);
-        }
+        authenticate({
+            username: values.username,
+            password: values.password,
+        });
 
     };
 
@@ -142,37 +151,49 @@ export default function Page() {
 
     // Register function
     const onFinishRegister: FormProps<User>['onFinish'] = async (values) => {
+        setRegisterButtonLoading(true);
+
+        // Create form data
+        const form: FormData = new FormData();
+        form.append('Name', values.name);
+        form.append('LastName', values.lastName);
+        form.append('Email', values.email);
+        form.append('Password', values.password);
+        form.append('UserTypeID', userType.userTypeID.toString());
+        if (values.username) form.append('Username', values.username);
+        if (values.documentTypeID) form.append('DocumentTypeID', values.documentTypeID.toString());
+        if (values.documentNumber) form.append('DocumentNumber', values.documentNumber);
+        if (values.phone) form.append('Phone', values.phone);
+        if (values.address) form.append('Address', values.address);
+
         try {
-            setRegisterButtonLoading(true);
-            console.log('Register values:', values, userType);
-
-            // Create form data
-            const form: FormData = new FormData();
-            form.append('Name', values.name);
-            form.append('LastName', values.lastName);
-            form.append('Email', values.email);
-            form.append('Password', values.password);
-            form.append('UserTypeID', userType.userTypeID.toString());
-            if (values.username) form.append('Username', values.username);
-            if (values.documentTypeID) form.append('DocumentTypeID', values.documentTypeID.toString());
-            if (values.documentNumber) form.append('DocumentNumber', values.documentNumber);
-            if (values.phone) form.append('Phone', values.phone);
-            if (values.address) form.append('Address', values.address);
-
             // Send request
-            const { data }: { data: UserResponse } = await axiosInstance.post('/api/Auth/Register', form);
-
+            const data = await axiosInstance.post('/api/Auth/Register', form);
             setRegisterButtonLoading(false);
 
-            // Authenticate user
-            authenticate({
-                username: values.email,
-                password: values.password
-            });
+            // If user is created, authenticate
+            if (data.status === 200) {
+                authenticate({
+                    username: values.email,
+                    password: values.password,
+                });
+            }
 
-        } catch (error) {
-            console.log('Failed:', error);
+        } catch (error: any) {
+            const data = error.response.data;
+            console.log('Error:', data.message);
+            setRegisterErrorVisible(true);
+            setRegisterError(
+                data.message === 'Email is already taken'
+                    ? 'Ya existe un usuario con este correo electrónico. Intenta iniciar sesión.'
+                    : data.message === 'Username is already taken'
+                        ? 'Ya existe un usuario con este nombre de usuario. Intenta con otro.'
+                        : 'Error al registrarse. Inténtalo de nuevo más tarde.'
+            );
+            setRegisterButtonLoading(false);
         }
+
+
     };
 
     const onFinishRegisterFailed: FormProps<User>['onFinishFailed'] = (errorInfo) => {
@@ -189,19 +210,19 @@ export default function Page() {
         getDocumentTypes();
     }, []);
 
-    // UseEffect for log the current user type
-    useEffect(() => {
-        console.log('User type:', userType);
-    }, [userType]);
-
     return (
 
         <div className="w-screen h-full lg:h-screen flex flex-col-reverse lg:flex-row justify-center lg:items-center">
             <div
                 className='w-full lg:w-1/2 h-full  flex flex-col justify-between bg-green-300'
             >
+
+                <div className='w-full hidden lg:flex justify-center items-center lg:justify-start px-16 py-12'>
+                    <Image src={Logo} alt='Tabi Logo' />
+                </div>
+
                 <div className='h-full mx-8 my-12 lg:m-16 flex flex-col justify-center items-center gap-6'>
-                    <p className='text-brown text-2xl lg:text-5xl font-extrabold lg:leading-snug'>
+                    <p className='text-brown text-2xl lg:text-5xl font-black lg:leading-snug tracking-tight '>
                         Simplifica tus procesos de cultivo de café
                     </p>
                     <p className='text-brown font-regular text-lg lg:text-2xl'>
@@ -224,7 +245,15 @@ export default function Page() {
                     {operation === 'Registrarse' ? (
                         <>
                             <h2 className='text-brown text-2xl font-extrabold'>Regístrate en Tabi</h2>
-
+                            {registerErrorVisible && (
+                                <Alert
+                                    message={registerError}
+                                    type="error"
+                                    showIcon
+                                    closable
+                                    afterClose={() => setRegisterErrorVisible(false)}
+                                />
+                            )}
                             {
                                 userTypes.length > 0 && (
                                     <Segmented
@@ -356,7 +385,10 @@ export default function Page() {
                                 <Form.Item
                                     label="Contraseña"
                                     name="password"
-                                    rules={[{ required: true, message: 'Por favor, ingresa tu contraseña!' }]}
+                                    rules={[
+                                        { required: true, message: 'Por favor, ingresa tu contraseña!' },
+                                        { min: 6, message: 'La contraseña debe tener al menos 6 caracteres' }
+                                    ]}
                                 >
                                     <Input.Password />
                                 </Form.Item>
@@ -397,9 +429,14 @@ export default function Page() {
                         (
                             <>
                                 <h2 className='text-brown text-2xl font-extrabold'>Bienvenido a Tabi</h2>
-                                <Alert message="Error:" type="error" showIcon closable />
                                 {loginErrorVisible && (
-                                    <Alert message="Alert Message Text" type="error" showIcon closable afterClose={() => setLoginErrorVisible(false)} />
+                                    <Alert
+                                        message={loginError}
+                                        type="error"
+                                        showIcon
+                                        closable
+                                        afterClose={() => setLoginErrorVisible(false)}
+                                    />
                                 )}
                                 <Form
                                     name="loginForm"
@@ -420,7 +457,10 @@ export default function Page() {
                                     <Form.Item
                                         label="Contraseña"
                                         name="password"
-                                        rules={[{ required: true, message: 'Por favor, ingresa tu contraseña!' }]}
+                                        rules={[
+                                            { required: true, message: 'Por favor, ingresa tu contraseña!' },
+                                            { min: 6, message: 'La contraseña debe tener al menos 6 caracteres' }
+                                        ]}
                                     >
                                         <Input.Password />
                                     </Form.Item>
