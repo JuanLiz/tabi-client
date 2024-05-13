@@ -48,15 +48,13 @@ export default function TopBar() {
     useEffect(() => {
         // Set user cookies
         const userCookie = Cookies.get("user");
-        if (userCookie) {
-            setUser(JSON.parse(userCookie));
-            console.log('From TopBar', user);
-        }
-
-        // Get user farms
-        if (user) getFarms();
-
+        if (userCookie) setUser(JSON.parse(userCookie));
     }, []);
+
+    useEffect(() => {
+        console.log('From TopBar', user);
+        if (user) getFarms();
+    }, [user]);
 
 
     // Dropdown menu items
@@ -95,9 +93,9 @@ export default function TopBar() {
                                 <User theme="outline" size="1.25rem" fill="#412F26" />
                             </Avatar>
                             <span className='font-extrabold'>{user?.name}</span>
-                            <DownOne theme='filled' size="1rem" fill="#412F26" />   
+                            <DownOne theme='filled' size="1rem" fill="#412F26" />
                         </div>
-                        
+
 
                     </button>
                 </Dropdown>

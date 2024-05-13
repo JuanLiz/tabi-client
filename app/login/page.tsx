@@ -256,14 +256,14 @@ export default function LoginPage() {
                                         options={
                                             // Set name and label for each user type
                                             userTypes.map((userType) => ({
-                                                key: userType.userTypeID,
+                                                key: userType.name,
                                                 userTypeID: userType.userTypeID,
                                                 name: userType.name,
                                                 value: userType,
                                                 label: userType.name === 'Jugador' ? (
-                                                    <div className='py-4 flex items-center gap-4'>
+                                                    <div className='py-4 flex items-center gap-4' key={userType.name}>
                                                         <div className='hidden md:flex '><GameThree theme="outline" size="32" fill="#412F26" /></div>
-                                                        <div className='flex flex-col items-start gap-2'>
+                                                        <div className='flex flex-col items-start gap-2' >
                                                             <p className='text-wrap text-start font-bold leading-tight'>Quiero jugar a Tabiland </p>
                                                             <p className='text-wrap text-xs text-start text-gray-500'> Juega y aprende sobre el cultivo de café</p>
                                                         </div>
@@ -271,7 +271,7 @@ export default function LoginPage() {
 
                                                 ) : userType.name === 'Caficultor'
                                                     ? (
-                                                        <div className='py-4 flex items-center gap-4'>
+                                                        <div className='py-4 flex items-center gap-4' key={userType.userTypeID}>
                                                             <div className='hidden md:flex '><Leaves theme="outline" size="32" fill="#412F26" /></div>
                                                             <div className='flex flex-col items-start gap-2'>
                                                                 <p className='text-wrap text-start font-bold leading-tight'>Quiero gestionar mis cultivos</p>
@@ -333,7 +333,7 @@ export default function LoginPage() {
                                                             {// Check if doctypes is ready
                                                                 documentTypes.length > 0 && (
                                                                     documentTypes.map((docType) => (docType.shortName && (
-                                                                        <Select.Option key={docType.documentTypeID} value={docType.documentTypeID}>{docType?.shortName}</Select.Option>
+                                                                        <Select.Option key={docType.shortName} value={docType.documentTypeID}>{docType?.shortName}</Select.Option>
                                                                     )))
                                                                 )
                                                             }

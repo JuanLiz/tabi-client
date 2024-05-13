@@ -44,6 +44,10 @@ export async function middleware(request: NextRequest) {
         const userValue = request.cookies.get("user")?.value;
         const userID = userValue ? JSON.parse(userValue).userID : undefined;
         if (!userID) return NextResponse.redirect(new URL("/login", request.nextUrl.origin));
+
+        // Hardcoded value for players
+        if (userValue && JSON.parse(userValue).userTypeID === 2) 
+            return NextResponse.redirect(new URL("/onboarding", request.nextUrl.origin));
         
         const data = await fetch(
             `http://localhost:3000/api/Farm?Filters=UserID%3D%3D${userID}`,
