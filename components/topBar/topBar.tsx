@@ -23,6 +23,8 @@ export default function TopBar() {
 
     const [farms, setFarms] = useState<FarmResponse[] | null>([]);
 
+    const [currentFarm, setCurrentFarm] = useState<number | undefined>(parseInt(Cookies.get('current_farm_id') || '0'));
+
 
     //=== API Methods ===//
     const getFarms = async () => {
@@ -30,15 +32,19 @@ export default function TopBar() {
             const res: AxiosResponse<FarmResponse[]> = await axiosInstance.get("/api/Farm?Filters=UserID%3D%3D" + user?.userID);
             console.log(res.data);
             setFarms(res.data);
-            if (res.data.length > 0 && !Cookies.get('current_farm_id'))
-                Cookies.set("current_farm_id", res.data[0].farmID.toString());
+            if (res.data.length > 0
+                && res.data.includes(res.data.find(farm =>
+                    farm.farmID === currentFarm) || res.data[0])) {
+                setCurrentFarm(res.data[0].farmID);
+            }
+
         } catch (err) {
             console.log(err);
         }
     }
 
-    const setCurrentFarm = (farmID: number) => {
-        Cookies.set("current_farm_id", farmID.toString());
+    const setFarm = (farmID: number) => {
+        setCurrentFarm(farmID);
     }
 
     const logout = () => {
@@ -59,6 +65,11 @@ export default function TopBar() {
         console.log('From TopBar', user);
         if (user) getFarms();
     }, [user]);
+
+    useEffect(() => {
+        console.log('From TopBar', currentFarm);
+        if (currentFarm) Cookies.set("current_farm_id", currentFarm.toString());
+    }, [currentFarm]);
 
 
     // Dropdown menu items
@@ -95,17 +106,17 @@ export default function TopBar() {
                                 return {
                                     key: farm.farmID.toString(),
                                     label: farm.name,
-                                    onClick: () => setCurrentFarm(farm.farmID)
+                                    onClick: () => setFarm(farm.farmID)
                                 }
                             }),
                             selectable: true,
-                            defaultSelectedKeys: [Cookies.get('current_farm_id') || farms[0].farmID.toString()]
+                            defaultSelectedKeys: [currentFarm?.toString() || farms[0].farmID.toString()]
                         }}
 
                             trigger={['click']}>
                             <button className="flex items-center justify-between gap-2 lg:py-2 lg:px-4 rounded-lg lg:border border-brown/20 hover:bg-green-300  ">
                                 <HomeTwo theme="outline" size="20" fill="#412F26" />
-                                <span className='text-md font-semibold hidden lg:flex'>{farms?.find(farm => farm.farmID.toString() === Cookies.get('current_farm_id'))?.name}</span>
+                                <span className='text-md font-semibold hidden lg:flex'>{farms?.find(farm => farm.farmID === currentFarm)?.name}</span>
                                 <Sort theme='filled' size="1rem" fill="#412F26" />
                             </button>
                         </Dropdown>

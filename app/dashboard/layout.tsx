@@ -19,7 +19,6 @@ export default function DashboardLayout(props:
     const pathname = usePathname();
 
     const [currentActive, setCurrentActive] = useState<string>('1');
-
     const menuItems = [
         {
             key: '1',
