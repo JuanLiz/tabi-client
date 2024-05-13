@@ -119,9 +119,8 @@ export default function OnboardingPage() {
     }, []);
 
     useEffect(() => {
-        console.log(user);
         // Check if player has a crop
-        checkPlayerLot();
+        if(user?.userTypeID == 2) checkPlayerLot();
     }, [user]);
 
 

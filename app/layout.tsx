@@ -47,6 +47,11 @@ export default function RootLayout({
                 Form: {
                   marginLG: 8
                 },
+                Menu: {
+                  itemActiveBg: "#ADE679",
+                  itemSelectedBg: "#ADE679",
+                  itemSelectedColor: "#412F26",
+                },
               }
             }}
           >
