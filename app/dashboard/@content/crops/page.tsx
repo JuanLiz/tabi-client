@@ -14,6 +14,11 @@ export default function CropsPage() {
     const [slopeTypes, setSlopeTypes] = useState<SlopeType[]>();
     const currentFarm = Cookies.get('current_farm_id');
 
+    // Create lot popconfirm
+    const [createLotForm] = Form.useForm();
+    const [createLotVisible, setCreateLotVisible] = useState<boolean>(false);
+    const [createLotButtonLoading, setCreateLotButtonLoading] = useState<boolean>(false);
+
 
     const confirm = () =>
         new Promise((resolve) => {
@@ -48,15 +53,38 @@ export default function CropsPage() {
     }
 
     const createLot = async (lot: Lot) => {
-        const res = await axiosInstance.post('/api/Lot', lot);
-        if (res.status === 201) {
+        if (!currentFarm) return;
+
+        setCreateLotButtonLoading(true);
+        const createLotData: FormData = new FormData();
+        createLotData.append('FarmID', currentFarm);
+        createLotData.append('Name', lot.name);
+        createLotData.append('Hectares', lot.hectares.toString());
+        createLotData.append('SlopeTypeID', lot.slopeTypeID.toString());
+
+        try {
+            const res = await axiosInstance.post('/api/Lot', createLotData);
+            if (res.status === 201) {
+                getLots();
+            }
+            setCreateLotButtonLoading(false);
+            setCreateLotVisible(false);
+        } catch (err) {
+            console.log(err);
+            setCreateLotButtonLoading(false);
+        }
+    }
+
+    const deleteLot = async (lotID: number) => {
+        const res = await axiosInstance.delete('/api/Lot/' + lotID);
+        if (res.status === 204) {
             getLots();
         }
     }
 
     //=== Form Onfinish ===//
     const onCreateLotFinish: FormProps<Lot>['onFinish'] = (values) => {
-        console.log('Success:', values);
+        createLot(values);
     };
 
     //=== UseEffects ===//
@@ -64,6 +92,13 @@ export default function CropsPage() {
         getLots();
         getSlopeTypes();
     }, []);
+
+    // Clean form fieds on create lot modal close
+    useEffect(() => {
+        if (!createLotVisible) {
+            createLotForm.resetFields();
+        }
+    }, [createLotVisible]);
 
     // Set collapse items
     useEffect(() => {
@@ -119,19 +154,20 @@ export default function CropsPage() {
     }, [lots]);
 
 
-
     return (
         <div className="w-full flex flex-col lg:gap-6">
             <div className="w-full flex flex-col lg:flex-row gap-6 justify-between lg:items-center">
                 <h1 className="text-brown text-3xl lg:text-4xl font-extrabold">Gestión de cultivos</h1>
                 <Popconfirm
                     title="Agregar lote"
+                    open={createLotVisible}
                     placement="bottomRight"
                     description={
                         <Form
+                            form={createLotForm}
                             layout="vertical"
                             onFinish={onCreateLotFinish}
-                            style={{ margin: '1rem'}}
+                            style={{ margin: '1rem' }}
                         >
                             <Form.Item label="Nombre" name="name" rules={[{ required: true, message: 'Ingresa un nombre' }]}>
                                 <Input type="text" />
@@ -139,20 +175,21 @@ export default function CropsPage() {
                             <Form.Item label="Hectáreas" name="hectares" rules={[{ required: true, message: 'Ingresa las hectáreas' }]}>
                                 <Input type="number" />
                             </Form.Item>
-                            <Form.Item label="Inclinación" name="slopeType" rules={[{ required: true, message: 'Selecciona la inclinación' }]}>
+                            <Form.Item label="Inclinación" name="slopeTypeID" rules={[{ required: true, message: 'Selecciona la inclinación' }]}>
                                 <Select
                                     loading={slopeTypes === undefined}
                                     disabled={slopeTypes === undefined}
                                     placeholder="Selecciona la inclinación">
                                     {
                                         slopeTypes?.map(slope => (
-                                            <Select.Option key={slope.slopeTypeID} value={slope.slopeTypeID}>{slope.name}</Select.Option>
+                                            <Select.Option key={slope.name} value={slope.slopeTypeID}>{slope.name}</Select.Option>
                                         ))
                                     }
                                 </Select>
                             </Form.Item>
-                            <div className="w-full flex justify-end pt-2">
-                                <Button type="primary" htmlType="submit">Enviar</Button>
+                            <div className="w-full flex justify-end gap-2 pt-2">
+                                <Button type="default" onClick={() => setCreateLotVisible(false)}>Cancelar</Button>
+                                <Button type="primary" htmlType="submit" loading={createLotButtonLoading}>Enviar</Button>
                             </div>
                         </Form>
                     }
@@ -172,6 +209,7 @@ export default function CropsPage() {
                                 fontWeight: '500'
                             }
                         }
+                        onClick={() => setCreateLotVisible(!createLotVisible)}
                     >Agregar lote</Button>
                 </Popconfirm>
 
