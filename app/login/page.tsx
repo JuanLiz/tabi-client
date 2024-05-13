@@ -1,7 +1,7 @@
 'use client'
 
 import type { FormProps } from 'antd';
-import { Alert, Button, Form, Input, Segmented, Select, Space } from 'antd';
+import { Alert, Button, Form, Input, Segmented, Select, Skeleton, Space } from 'antd';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import Image from 'next/image';
@@ -88,6 +88,7 @@ export default function LoginPage() {
         setLoginButtonLoading(true);
         setRegisterButtonLoading(true);
         const form: FormData = new FormData();
+        form.append('UserTypeID', userType.userTypeID.toString());
         if (values?.username.includes('@')) {
             form.append('Email', values.username);
         }
@@ -368,7 +369,7 @@ export default function LoginPage() {
                                         { type: 'email', message: 'Ingresa un correo válido' }
                                         ]}
                                     >
-                                        <Input type='email'/>
+                                        <Input type='email' />
                                     </Form.Item>
 
                                 </div>
@@ -430,6 +431,50 @@ export default function LoginPage() {
                                         afterClose={() => setLoginErrorVisible(false)}
                                     />
                                 )}
+
+                                {
+                                    userTypes.length > 0 ? (
+                                        <Segmented
+                                            block
+                                            className='w-full'
+                                            value={userType}
+                                            onChange={setUserType}
+                                            options={
+                                                // Set name and label for each user type
+                                                userTypes.map((userType) => ({
+                                                    key: userType.name,
+                                                    userTypeID: userType.userTypeID,
+                                                    name: userType.name,
+                                                    value: userType,
+                                                    label: userType.name === 'Jugador' ? (
+                                                        <div className='py-2 flex items-center gap-4' key={userType.name}>
+                                                            <div className='hidden md:flex '><GameThree theme="outline" size="24" fill="#412F26" /></div>
+                                                            <div className='flex flex-col items-start gap-2' >
+                                                                <p className='text-wrap text-start font-bold leading-tight'>Entrar como jugador</p>
+                                                            </div>
+                                                        </div>
+
+                                                    ) : userType.name === 'Caficultor'
+                                                        ? (
+                                                            <div className='py-2 flex items-center gap-4' key={userType.userTypeID}>
+                                                                <div className='hidden md:flex '><Leaves theme="outline" size="24" fill="#412F26" /></div>
+                                                                <div className='flex flex-col items-start gap-2'>
+                                                                    <p className='text-wrap text-start font-bold leading-tight'>Entrar como caficultor</p>
+
+                                                                </div>
+                                                            </div>
+                                                        )
+                                                        : null
+                                                }))
+                                            }
+
+                                        />
+                                    )
+                                    :
+                                    <Skeleton.Input block className='w-full' active />
+                                }
+
+
                                 <Form
                                     name="loginForm"
                                     layout='vertical'
