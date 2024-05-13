@@ -1,11 +1,15 @@
 'use client'
 
 import axiosInstance from "@/axiosInterceptor";
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, ExclamationCircleFilled, PlusOutlined } from '@ant-design/icons';
 import { Edit, MoreOne } from "@icon-park/react";
 import { Button, Collapse, CollapseProps, Dropdown, Form, FormProps, Input, Popconfirm, Select, Skeleton } from "antd";
 import Cookies from 'js-cookie';
 import { useEffect, useState } from "react";
+
+// Image for empty lots
+import CoffeePlanting from '@/public/img/coffee-planting.svg';
+import Image from "next/image";
 
 export default function CropsPage() {
 
@@ -18,6 +22,11 @@ export default function CropsPage() {
     const [createLotForm] = Form.useForm();
     const [createLotVisible, setCreateLotVisible] = useState<boolean>(false);
     const [createLotButtonLoading, setCreateLotButtonLoading] = useState<boolean>(false);
+
+    // Edit lot popconfirm
+    const [editLotForm] = Form.useForm();
+    const [editLotCurrent, setEditLotCurrent] = useState<number>();
+    const [editLotVisible, setEditLotVisible] = useState<boolean>(false)
 
 
     const confirm = () =>
@@ -75,6 +84,26 @@ export default function CropsPage() {
         }
     }
 
+    const updateLot = async (lot: LotResponse) => {
+
+        const editLotData: FormData = new FormData();
+
+        editLotData.append('LotID', lot.lotID.toString());
+        editLotData.append('Name', lot.name);
+        editLotData.append('Hectares', lot.hectares.toString());
+        editLotData.append('SlopeTypeID', lot.slopeTypeID.toString());
+
+        try {
+            const res = await axiosInstance.put('/api/Lot/', editLotData);
+            if (res.status === 200) {
+                editLotForm.resetFields();
+                getLots();
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
     const deleteLot = async (lotID: number) => {
         const res = await axiosInstance.delete('/api/Lot/' + lotID);
         if (res.status === 204) {
@@ -85,6 +114,10 @@ export default function CropsPage() {
     //=== Form Onfinish ===//
     const onCreateLotFinish: FormProps<Lot>['onFinish'] = (values) => {
         createLot(values);
+    };
+
+    const onEditLotFinish: FormProps<LotResponse>['onFinish'] = (values) => {
+        updateLot(values);
     };
 
     //=== UseEffects ===//
@@ -100,6 +133,16 @@ export default function CropsPage() {
         }
     }, [createLotVisible]);
 
+    // Fill or clean forms for edit lot modal
+    useEffect(() => {
+        editLotForm.setFieldsValue({
+            lotID: lots?.find(lot => lot.lotID === editLotCurrent)?.lotID,
+            name: lots?.find(lot => lot.lotID === editLotCurrent)?.name,
+            hectares: lots?.find(lot => lot.lotID === editLotCurrent)?.hectares,
+            slopeTypeID: lots?.find(lot => lot.lotID === editLotCurrent)?.slopeTypeID
+        });
+    }, [editLotCurrent, editLotVisible]);
+
     // Set collapse items
     useEffect(() => {
         if (!lots) return;
@@ -110,7 +153,9 @@ export default function CropsPage() {
                     <div className="flex justify-between items-center w-full">
                         <div className="flex flex-col gap">
                             <p className="text-brown font-semibold">Lote {lot.name}</p>
-                            <p className="text-brown font-light text-sm">{`${lot.hectares} hectáreas, Inclinación ${lot.slopeType?.name.toLocaleLowerCase()}`}</p>
+                            <p className="text-brown font-light text-sm">
+                                {`${lot.hectares} hectáreas, Inclinación ${lot.slopeType?.name.toLocaleLowerCase()}`}
+                            </p>
                         </div>
                         <div className="flex items-center">
                             {/* Lot edit options*/}
@@ -118,16 +163,72 @@ export default function CropsPage() {
                                 items: [
                                     {
                                         key: '0',
-                                        label: 'Editar',
                                         icon: <Edit theme="outline" size="18" fill="#412F26" />,
-                                        onClick: () => console.log('Edit')
+                                        label: (
+                                            <Popconfirm
+                                                title="Editar lote"
+                                                placement="bottomRight"
+                                                onConfirm={confirm}
+                                                description={
+                                                    <Form
+                                                        form={editLotForm}
+                                                        layout="vertical"
+                                                        onFinish={onEditLotFinish}
+                                                        style={{ margin: '1rem' }}
+                                                    >
+                                                        <Form.Item name="lotID" hidden>
+                                                            <Input type="text" />
+                                                        </Form.Item>
+                                                        <Form.Item label="Nombre" name="name" rules={[{ required: true, message: 'Ingresa un nombre' }]}>
+                                                            <Input type="text" />
+                                                        </Form.Item>
+                                                        <Form.Item label="Hectáreas" name="hectares" rules={[{ required: true, message: 'Ingresa las hectáreas' }]}>
+                                                            <Input type="number" />
+                                                        </Form.Item>
+                                                        <Form.Item label="Inclinación" name="slopeTypeID" rules={[{ required: true, message: 'Selecciona la inclinación' }]}>
+                                                            <Select
+                                                                loading={slopeTypes === undefined}
+                                                                disabled={slopeTypes === undefined}
+                                                                placeholder="Selecciona la inclinación">
+                                                                {
+                                                                    slopeTypes?.map(slope => (
+                                                                        <Select.Option key={slope.name} value={slope.slopeTypeID}>{slope.name}</Select.Option>
+                                                                    ))
+                                                                }
+                                                            </Select>
+                                                        </Form.Item>
+                                                        <div className="w-full flex justify-end gap-2 pt-2">
+                                                            <Button type="primary" htmlType="submit">Enviar</Button>
+                                                        </div>
+                                                    </Form>
+                                                }
+                                                icon={null}
+                                                cancelButtonProps={{ style: { display: 'none' } }}
+                                                okButtonProps={{ style: { display: 'none' } }}
+                                                onOpenChange={() => { setEditLotCurrent(lot.lotID); setEditLotVisible(!editLotVisible) }}
+                                            >
+                                                Editar
+                                            </Popconfirm>
+                                        )
                                     },
                                     {
                                         key: '1',
                                         danger: true,
-                                        label: 'Eliminar',
                                         icon: <DeleteOutlined style={{ fontSize: '115%' }} />,
-                                        onClick: () => console.log('Delete')
+                                        label: (
+                                            <Popconfirm
+                                                icon={<ExclamationCircleFilled style={{ color: '#FF4D4F' }} />}
+                                                placement="topRight"
+                                                title={"¿Eliminar el Lote " + lot.name + "?"}
+                                                description="Esta acción no se puede deshacer."
+                                                onConfirm={() => deleteLot(lot.lotID)}
+                                                okText="Eliminar lote"
+                                                okButtonProps={{ danger: true }}
+                                                cancelText="Cancelar"
+                                            >
+                                                Eliminar
+                                            </Popconfirm>
+                                        )
                                     }
                                 ]
                             }}
@@ -137,8 +238,8 @@ export default function CropsPage() {
                                 </button>
 
                             </Dropdown>
-                        </div>
-                    </div>
+                        </div >
+                    </div >
                 ),
                 children: lot.crops.map(crop => {
                     return (
@@ -148,7 +249,7 @@ export default function CropsPage() {
                     )
                 })
             }
-        });
+        }).reverse();
 
         setLotsCollapse(items);
     }, [lots]);
@@ -196,8 +297,7 @@ export default function CropsPage() {
                     icon={null}
                     cancelButtonProps={{ style: { display: 'none' } }}
                     okButtonProps={{ style: { display: 'none' } }}
-                    onConfirm={confirm}
-                    onOpenChange={() => console.log('open change')}
+                    onOpenChange={() => setCreateLotVisible(!createLotVisible)}
                 >
                     <Button
                         type="primary"
@@ -212,15 +312,21 @@ export default function CropsPage() {
                         onClick={() => setCreateLotVisible(!createLotVisible)}
                     >Agregar lote</Button>
                 </Popconfirm>
-
             </div>
 
-            <div className="w-full mt-8">
+            <div className="w-full mt-8 overflow-y-visible">
                 {
                     lots !== undefined && lots !== null
                         ? lots.length > 0
-                            ? <Collapse items={lotsCollapse} size="large" />
-                            : <p>No hay lotes registrados</p>
+                            ? <Collapse items={lotsCollapse} size="large" defaultActiveKey={lots[lots.length - 1].lotID.toString()} />
+                            : <div className="w-full flex flex-col items-center gap-2">
+                                <Image src={CoffeePlanting} alt="Coffee Planting" className="h-96" />
+                                <div className="flex flex-col gap-2 items-center justify-center">
+                                    <p className="text-brown font-bold text-2xl">No hay lotes registrados</p>
+                                    <p className="text-brown font-light">Agrega un lote para comenzar a gestionar tus cultivos</p>
+                                </div>
+
+                            </div>
                         : <div className="flex flex-col gap-4">
                             <Skeleton.Input block active size="large" />
                             <Skeleton.Input block active size="large" />

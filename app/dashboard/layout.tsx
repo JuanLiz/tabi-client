@@ -66,7 +66,7 @@ export default function DashboardLayout(props:
                         ))}
                     </Menu>
                 </div>
-                <div className="w-full lg:w-5/6 ">
+                <div className="w-full lg:w-5/6 overflow-y-auto">
                     <TopBar />
                     {props.content}
                 </div>

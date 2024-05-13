@@ -88,7 +88,7 @@ export default function TopBar() {
 
 
     return (
-        <header className="w-full flex justify-between items-center px-8 py-4 bg-green-300 lg:bg-white text-brown border-b border-brown/15  ">
+        <header className="sticky top-0 w-full flex justify-between items-center px-8 py-4 bg-green-300 lg:bg-white text-brown border-b border-brown/15  ">
             <div className='flex gap-4 lg:gap-8 items-center'>
                 <div className='lg:hidden'>
                     <Image src={Logo} alt="Tabi Logo" height={28} />
