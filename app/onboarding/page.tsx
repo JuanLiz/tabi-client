@@ -125,7 +125,7 @@ export default function OnboardingPage() {
 
 
     return (
-        <div className="w-screen lg:h-full flex flex-col lg:flex-row justify-center items-center gap-8 p-8">
+        <div className="w-screen lg:h-full flex flex-col lg:flex-row justify-center items-center gap-8 p-5 md:p-8">
             <div className={`${user && user.userTypeID === 1 ? 'lg:w-1/2' : 'lg:w-1/4'} h-full flex justify-center items-center`}>
                 {user && user.userTypeID === 1
                     ? <Image src={CoffeeIllustration} alt="Coffee Farmer" />

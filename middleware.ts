@@ -46,9 +46,9 @@ export async function middleware(request: NextRequest) {
         if (!userID) return NextResponse.redirect(new URL("/login", request.nextUrl.origin));
 
         // Hardcoded value for players
-        if (userValue && JSON.parse(userValue).userTypeID === 2) 
+        if (userValue && JSON.parse(userValue).userTypeID === 2)
             return NextResponse.redirect(new URL("/onboarding", request.nextUrl.origin));
-        
+
         const data = await fetch(
             `http://localhost:3000/api/Farm?Filters=UserID%3D%3D${userID}`,
             { headers: { Authorization: `Bearer ${token}` }, })
@@ -60,5 +60,23 @@ export async function middleware(request: NextRequest) {
         }
     }
 
+    if (request.nextUrl.pathname == '/onboarding' && decodedToken) {
+        // Search for user farms. Use fetch
+        const userValue = request.cookies.get("user")?.value;
+        const userID = userValue ? JSON.parse(userValue).userID : undefined;
+        if (!userID) return NextResponse.redirect(new URL("/login", request.nextUrl.origin));
 
+        if (userValue && JSON.parse(userValue).userTypeID === 2) return;
+
+        const data = await fetch(
+            `http://localhost:3000/api/Farm?Filters=UserID%3D%3D${userID}`,
+            { headers: { Authorization: `Bearer ${token}` }, })
+            .then((res) => res.json())
+            .catch((err) => console.log(err));
+
+        if (data.length > 0) {
+            return NextResponse.redirect(new URL("/dashboard", request.nextUrl.origin));
+        }
+
+    }
 }

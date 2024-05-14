@@ -320,10 +320,10 @@ export default function CropsPage() {
                         ? lots.length > 0
                             ? <Collapse items={lotsCollapse} size="large" defaultActiveKey={lots[lots.length - 1].lotID.toString()} />
                             : <div className="w-full flex flex-col items-center gap-2">
-                                <Image src={CoffeePlanting} alt="Coffee Planting" className="h-96" />
+                                <Image src={CoffeePlanting} alt="Coffee Planting" className="h-72 md:h-96" />
                                 <div className="flex flex-col gap-2 items-center justify-center">
-                                    <p className="text-brown font-bold text-2xl">No hay lotes registrados</p>
-                                    <p className="text-brown font-light">Agrega un lote para comenzar a gestionar tus cultivos</p>
+                                    <p className="text-brown font-bold text-2xl text-center">No hay lotes registrados</p>
+                                    <p className="text-brown font-light text-center">Agrega un lote para comenzar a gestionar tus cultivos</p>
                                 </div>
 
                             </div>
