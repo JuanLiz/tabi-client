@@ -30,7 +30,7 @@ export default function RootLayout({
             theme={{
               token: {
                 // Seed Token
-                fontFamily: "Mulish",
+                fontFamily: "inherit",
 
                 borderRadius: 8,
 
