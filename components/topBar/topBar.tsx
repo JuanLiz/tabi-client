@@ -67,7 +67,7 @@ export default function TopBar() {
     useEffect(() => {
         console.log('From TopBar', user);
         if (user) getFarms();
-    }, [user]);
+    }, [user, getFarms]);
 
     useEffect(() => {
         console.log('From TopBar', currentFarm);

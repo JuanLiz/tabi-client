@@ -201,7 +201,7 @@ export default function LoginPage() {
     useEffect(() => {
         getUserTypes();
         getDocumentTypes();
-    }, []);
+    }, [getDocumentTypes, getUserTypes]);
 
     return (
 
