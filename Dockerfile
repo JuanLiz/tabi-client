@@ -28,6 +28,7 @@ COPY . .
 # Learn more here: https://nextjs.org/telemetry
 # Uncomment the following line in case you want to disable telemetry during the build.
 # ENV NEXT_TELEMETRY_DISABLED 1
+RUN echo "API_HOST = host.docker.internal" > .env
 
 RUN \
   if [ -f yarn.lock ]; then yarn run build; \
