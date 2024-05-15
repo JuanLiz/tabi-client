@@ -8,6 +8,7 @@ import Cookies from 'js-cookie';
 import { useEffect, useState } from "react";
 
 // Image for empty lots
+import CropCard from "@/components/cropCard/cropCard";
 import CoffeePlanting from '@/public/img/coffee-planting.svg';
 import Image from "next/image";
 
@@ -257,6 +258,10 @@ export default function CropsPage() {
 
     return (
         <div className="w-full flex flex-col lg:gap-6">
+
+            <div className="pt-8 flex">
+                <CropCard crop={{ cropID: 1, plantingDate: new Date(), lotID: 1, cropTypeID: 1, hectares: 2, cropStateID: 1, cropType: { cropTypeID: 1, name: 'Café', expectedYield: 1 } }} />
+            </div>
             <div className="w-full flex flex-col lg:flex-row gap-6 justify-between lg:items-center">
                 <h1 className="text-brown text-3xl lg:text-4xl font-extrabold">Gestión de cultivos</h1>
                 <Popconfirm
@@ -333,6 +338,7 @@ export default function CropsPage() {
                             <Skeleton.Input block active size="large" />
                         </div>
                 }
+
             </div>
         </div >
     );

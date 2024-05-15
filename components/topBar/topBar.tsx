@@ -141,16 +141,15 @@ export default function TopBar() {
                         }}
                             className='hidden lg:flex'
                             trigger={['click']}>
-                            <button className="flex items-center justify-between gap-2 lg:py-2 lg:px-4 rounded-lg lg:border border-brown/20 hover:bg-green-300  ">
+                            <button className="flex items-center justify-between gap-2 lg:py-2 lg:px-4 rounded-lg lg:border border-brown/20 hover:bg-brown-100/40 ">
                                 <HomeTwo theme="outline" size="20" fill="#412F26" />
                                 <span className='text-md font-semibold hidden lg:flex'>{farms?.find(farm => farm.farmID === currentFarm)?.name}</span>
                                 <Sort theme='filled' size="1rem" fill="#412F26" />
                             </button>
                         </Dropdown>
-                        : <div className='hidden lg:flex'>
+                        : user && farms && user.userTypeID === 1 && (<div className='lg:hidden'>
                             <Skeleton.Button active />
-                        </div>
-
+                        </div>)
                 }
             </div>
 
@@ -199,15 +198,15 @@ export default function TopBar() {
                         }}
                             className='lg:hidden'
                             trigger={['click']}>
-                            <button className="flex items-center justify-between gap-2 lg:py-2 lg:px-4 rounded-lg lg:border border-brown/20 hover:bg-green-300  ">
+                            <button className="flex items-center justify-between gap-2 lg:py-2 lg:px-4 rounded-lg lg:border border-brown/20 hover:bg-brown-100/40  ">
                                 <HomeTwo theme="outline" size="20" fill="#412F26" />
                                 <span className='text-md font-semibold hidden lg:flex'>{farms?.find(farm => farm.farmID === currentFarm)?.name}</span>
                                 <Sort theme='filled' size="1rem" fill="#412F26" />
                             </button>
                         </Dropdown>
-                        : <div className='lg:hidden'>
+                        : user && farms && user.userTypeID === 1 && (<div className='lg:hidden'>
                             <Skeleton.Button active />
-                        </div>
+                        </div>)
                 }
 
 

@@ -1,0 +1,23 @@
+name: Execute SSH deployment
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  push-and-deploy:
+    runs-on: ubuntu-latest
+    environment: deployment
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Configure and run SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: cd tabi-client && ./tabi-client-update.sh
