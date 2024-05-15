@@ -183,7 +183,6 @@ export default function LoginPage() {
                         ? 'Ya existe un usuario con este nombre de usuario. Intenta con otro.'
                         : 'Error al registrarse. Inténtalo de nuevo más tarde.'
             );
-            console.log('Failed:', error);
             setRegisterButtonLoading(false);
         }
 
@@ -356,10 +355,7 @@ export default function LoginPage() {
                                                 className='md:w-1/2'
                                                 label="Nombre de usuario"
                                                 name="username"
-                                                rules={[
-                                                    { required: userType.name === 'Jugador', message: 'Por favor, ingresa un nombre de usuario' },
-                                                    { max: 12, message: 'El nombre de usuario debe tener menos de 12 caracteres' }
-                                                ]}
+                                                rules={[{ required: userType.name === 'Jugador', message: 'Por favor, ingresa un nombre de usuario' }]}
                                             >
                                                 <Input />
                                             </Form.Item>
