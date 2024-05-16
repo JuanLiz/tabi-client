@@ -1,4 +1,5 @@
 interface Crop {
+    lotID: number;
     hectares: number;
     cropTypeID: number;
     cropStateID: number;
@@ -8,7 +9,6 @@ interface Crop {
 
 interface CropResponse extends Crop {
     cropID: number;
-    lotID: number;
     lot?: Lot;
     cropType?: CropType;
     cropState?: CropState;
