@@ -55,6 +55,9 @@ export default function RootLayout({
                 Descriptions: {
                   fontSize: 16,
                 },
+                List: {
+                  fontSize: 16,
+                }
               }
             }}
           >

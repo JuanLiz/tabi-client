@@ -1,5 +1,6 @@
 import axiosInstance from "@/axiosInterceptor";
 import { Button, DatePicker, Form, Input, Modal, Select } from "antd";
+import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 
 export default function AddCropModal({ lot, visible, setVisible, setIsCropAdded }
@@ -62,6 +63,7 @@ export default function AddCropModal({ lot, visible, setVisible, setIsCropAdded 
 
     const handleCancel = () => {
         setVisible(false);
+        addCropForm.resetFields();
     }
 
     const onAddCropFinish = async (values: any) => {
@@ -95,7 +97,8 @@ export default function AddCropModal({ lot, visible, setVisible, setIsCropAdded 
                         <DatePicker
                             format="DD/MM/YYYY"
                             className="w-full"
-                            placeholder="Selecciona la fecha"   
+                            placeholder="Selecciona la fecha"  
+                            maxDate={dayjs(new Date().toISOString().split('T')[0], 'YYYY-MM-DD')} 
                         />
                     </Form.Item>
                 </div>

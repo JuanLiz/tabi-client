@@ -2,16 +2,16 @@
 
 import axiosInstance from "@/axiosInterceptor";
 import { DeleteOutlined, ExclamationCircleFilled, PlusOutlined } from '@ant-design/icons';
-import { Edit, MoreOne, Plus, PlusCross } from "@icon-park/react";
+import { Edit, MoreOne, Plus } from "@icon-park/react";
 import { Button, Collapse, CollapseProps, Dropdown, Form, FormProps, Input, Popconfirm, Select, Skeleton } from "antd";
 import Cookies from 'js-cookie';
 import { useEffect, useState } from "react";
 
 // Image for empty lots
 import CropCard from "@/components/cropCard/cropCard";
+import AddCropModal from "@/components/modals/addCropModal/addCropModal";
 import CoffeePlanting from '@/public/img/coffee-planting.svg';
 import Image from "next/image";
-import AddCropModal from "@/components/modals/addCropModal/addCropModal";
 
 export default function CropsPage() {
 
@@ -222,7 +222,7 @@ export default function CropsPage() {
                                                 okButtonProps={{ style: { display: 'none' } }}
                                                 onOpenChange={() => { setEditLotCurrent(lot.lotID); setEditLotVisible(!editLotVisible) }}
                                             >
-                                                Editar
+                                                <span className="w-full">Editar</span>
                                             </Popconfirm>
                                         )
                                     },
