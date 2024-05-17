@@ -52,6 +52,9 @@ export default function RootLayout({
                   itemSelectedBg: "#ADE679",
                   itemSelectedColor: "#412F26",
                 },
+                Descriptions: {
+                  fontSize: 16,
+                },
               }
             }}
           >

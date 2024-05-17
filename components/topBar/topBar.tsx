@@ -79,7 +79,7 @@ export default function TopBar() {
     const items: MenuProps['items'] = [
         {
             key: 'name',
-            label: user?.name + ' ' + user?.lastName,
+            label: (<span className='text-brown font-bold'>{user?.name + ' ' + user?.lastName}</span>),
             disabled: true,
         },
         {
@@ -119,7 +119,7 @@ export default function TopBar() {
                             items: [
                                 {
                                     key: 'name',
-                                    label: 'Selección de fincas',
+                                    label: (<span className='text-brown'> <b>Selección de fincas</b> <br />Puedes agregar más fincas o modificarlas <br /> en la sección de configuración.</span>),
                                     disabled: true,
                                 },
                                 {
@@ -130,7 +130,7 @@ export default function TopBar() {
                                 farms?.map(farm => {
                                     return {
                                         key: farm.farmID.toString(),
-                                        label: farm.name,
+                                        label: (<>{farm.name}</>),
                                         disabled: false, // Add the disabled property here
                                         onClick: () => setFarm(farm.farmID),
                                     }
@@ -147,7 +147,7 @@ export default function TopBar() {
                                 <Sort theme='filled' size="1rem" fill="#412F26" />
                             </button>
                         </Dropdown>
-                        : user && farms && user.userTypeID === 1 && (<div className='lg:hidden'>
+                        : user && farms && user.userTypeID === 1 && (<div className='hidden lg:flex'>
                             <Skeleton.Button active />
                         </div>)
                 }
@@ -171,12 +171,11 @@ export default function TopBar() {
                 {/* Farm dropdown for small screens */}
                 {
                     user && farms && user.userTypeID === 1 && farms.length > 0 ?
-
                         <Dropdown menu={{
                             items: [
                                 {
                                     key: 'name',
-                                    label: 'Selección de fincas',
+                                    label: (<span className='text-brown'> <b>Selección de fincas</b> <br />Puedes agregar más fincas <br /> o modificarlas  en la sección de configuración.</span>),
                                     disabled: true,
                                 },
                                 {
@@ -187,7 +186,7 @@ export default function TopBar() {
                                 farms?.map(farm => {
                                     return {
                                         key: farm.farmID.toString(),
-                                        label: farm.name,
+                                        label: (<>{farm.name}</>),
                                         disabled: false, // Add the disabled property here
                                         onClick: () => setFarm(farm.farmID),
                                     }

@@ -1,8 +1,16 @@
-import { Leaves, DiamondThree, Round } from "@icon-park/react";
+import { DiamondThree, Leaves, Round } from "@icon-park/react";
+import { useRouter } from "next/navigation";
+
 
 export default function CropCard({ crop }: { crop: CropResponse }) {
+
+    const router = useRouter();
+
     return (
-        <div className="w-full md:max-w-72  rounded-lg border border-brown/15 p-4 flex flex-col gap-4 bg-brown-100/40 cursor-pointer hover:border-brown-500 hover:-translate-y-0.5 transition-transform duration-150">
+        <div
+            className="w-full md:max-w-72  rounded-lg border border-brown/15 p-4 flex flex-col gap-4 bg-brown-100/40 cursor-pointer hover:border-brown-500 hover:-translate-y-0.5 transition-transform duration-150"
+            onClick={() => router.push(`/dashboard/crops/${crop.cropID}`)}
+        >
             <div className="flex items-center justify-between gap-4">
                 <div className="w-full flex flex-col gap-1 justify-center">
                     {/* Header with variety badge */}
@@ -34,7 +42,7 @@ export default function CropCard({ crop }: { crop: CropResponse }) {
             </div>
             <div>
 
-                <p className="text-brown/60 text-xs ">{crop.hectares} hectáreas sembradas</p>
+                <p className="text-brown/60 text-xs ">{crop.hectares} hectáreas cultivadas</p>
 
                 <p className="text-brown/60 text-xs ">Sembrado el {crop.plantingDate.toLocaleString(
                     'es-CO', {
