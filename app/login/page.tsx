@@ -225,6 +225,7 @@ export default function LoginPage() {
                 <Image src={PatternImg} alt='Pattern' className='' />
             </div>
             <div className='w-full lg:w-1/2 h-full flex flex-col justify-center items-center gap-4 px-6 py-12 lg:p-16'>
+                <Image src={Logo} alt="Tabi Logo" height={36} className='lg:hidden pb-4' />
                 <Segmented
                     size='large'
                     className='w-full'
@@ -470,8 +471,8 @@ export default function LoginPage() {
 
                                         />
                                     )
-                                    :
-                                    <Skeleton.Input block className='w-full' active />
+                                        :
+                                        <Skeleton.Input block className='w-full' active />
                                 }
 
 
