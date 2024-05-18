@@ -23,7 +23,9 @@ export async function middleware(request: NextRequest) {
         && decodedToken !== null
         && validateToken(decodedToken?.exp)
 
-    if ((request.nextUrl.pathname == '/' || request.nextUrl.pathname.startsWith("/dashboard"))
+    if ((request.nextUrl.pathname == '/'
+        || request.nextUrl.pathname.startsWith("/dashboard")
+        || request.nextUrl.pathname == '/settings')
         && !isTokenValid
     ) {
         request.cookies.delete("user");
@@ -39,7 +41,8 @@ export async function middleware(request: NextRequest) {
     }
 
     // Check if user has farms, instead redirect to onboarding
-    if (request.nextUrl.pathname == '/dashboard' && decodedToken) {
+    if (request.nextUrl.pathname.includes('/dashboard') && decodedToken) {
+
         // Search for user farms. Use fetch
         const userValue = request.cookies.get("user")?.value;
         const userID = userValue ? JSON.parse(userValue).userID : undefined;

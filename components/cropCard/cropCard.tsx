@@ -8,7 +8,7 @@ export default function CropCard({ crop }: { crop: CropResponse }) {
 
     return (
         <div
-            className="w-full md:max-w-72  rounded-lg border border-brown/15 p-4 flex flex-col gap-4 bg-brown-100/40 cursor-pointer hover:border-brown-500 hover:-translate-y-0.5 transition-transform duration-150"
+            className="w-full md:max-w-72 rounded-lg border border-brown/15 p-4 flex flex-col gap-4 bg-brown-100/40 cursor-pointer hover:border-brown-500 hover:-translate-y-0.5 transition-transform duration-150"
             onClick={() => router.push(`/dashboard/crops/${crop.cropID}`)}
         >
             <div className="flex items-center justify-between gap-4">

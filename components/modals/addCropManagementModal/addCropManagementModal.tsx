@@ -1,5 +1,5 @@
 import axiosInstance from "@/axiosInterceptor";
-import { Button, DatePicker, Form, Modal, Select } from "antd";
+import { Alert, Button, DatePicker, Form, Modal, Select } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
@@ -17,6 +17,9 @@ export default function AddCropManagementModal({ crop, visible, setVisible, setI
     const [addCropManagementForm] = Form.useForm();
     const [addCropManagementButtonLoading, setAddCropManagementButtonLoading] = useState(false);
     const [plantingDate, setPlantingDate] = useState<Date>();
+
+    // Current crop management type ID for show alert
+    const [currentCropManagementTypeID, setCurrentCropManagementTypeID] = useState<number>();
 
     //== API Methods ==//
     const getCropManagementTypes = async () => {
@@ -54,6 +57,7 @@ export default function AddCropManagementModal({ crop, visible, setVisible, setI
     const handleCancel = () => {
         setVisible(false);
         addCropManagementForm.resetFields();
+        setCurrentCropManagementTypeID(undefined);
     }
 
     const onAddCropManagementFinish = async (values: any) => {
@@ -85,7 +89,7 @@ export default function AddCropManagementModal({ crop, visible, setVisible, setI
                         name="cropManagementTypeID"
                         rules={[{ required: true, message: 'Por favor, selecciona un tipo de gestión' }]}
                     >
-                        <Select>
+                        <Select onChange={(value) => setCurrentCropManagementTypeID(value)}>
                             {cropManagementTypes?.map((cm, index) => {
                                 return <Select.Option key={index} value={cm.cropManagementTypeID}>{cm.name}</Select.Option>
                             })}
@@ -113,11 +117,17 @@ export default function AddCropManagementModal({ crop, visible, setVisible, setI
                 >
                     <TextArea rows={4} />
                 </Form.Item>
+
+                {currentCropManagementTypeID === 4 &&
+                    (
+                        <Alert message="Recuerda añadir el registro de la cosecha en el menú de Cosechas" type="info" showIcon className="w-full my-2" />
+                    )
+                }
                 <div className="w-full flex justify-end gap-2 pt-2">
                     <Button type="default" onClick={handleCancel}>Cancelar</Button>
                     <Button type="primary" htmlType="submit" loading={addCropManagementButtonLoading}>Enviar</Button>
                 </div>
             </Form>
-        </Modal>
+        </Modal >
     );
 }

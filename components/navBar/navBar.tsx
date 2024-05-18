@@ -1,14 +1,14 @@
 import { HoldSeeds, Leaves, SettingTwo } from "@icon-park/react";
-import { Menu } from "antd";
+import { Menu, Skeleton } from "antd";
 
 import { usePathname, useRouter } from 'next/navigation';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function NavBar() {
     const router = useRouter();
     const pathname = usePathname();
 
-    const [currentActive, setCurrentActive] = useState<string>('1');
+    const [currentActive, setCurrentActive] = useState<string>();
 
     const menuItems = [
         {
@@ -31,28 +31,40 @@ export default function NavBar() {
         }
     ]
 
+    useEffect(() => {
+        const current = menuItems.find(item => pathname.includes(item.url));
+        setCurrentActive(current?.key || '1');
+    }, [])
+
     return (
-        <Menu
-            defaultSelectedKeys={['1']}
-            style={{ backgroundColor: 'rgb(173 230 121 / 0.00)', borderRightWidth: 0 }}
-            defaultOpenKeys={['sub1']}
-            mode="inline"
-            className="h-full shadow-lg"
-        >
-            {menuItems.map(item => (
-                <Menu.Item
-                    key={item.key}
-                    className="flex items-center group py-6"
-                    onClick={() => {
-                        setCurrentActive(item.key);
-                        router.push('/dashboard' + item.url)
-                    }} >
-                    <div className="flex gap-3 items-center">
-                        {item.icon}
-                        <span className={`text-base pt-0.5 ${currentActive === item.key ? 'font-bold' : 'font-medium'}`}>{item.title}</span>
-                    </div>
-                </Menu.Item>
-            ))}
-        </Menu>
+        currentActive
+            ? <Menu
+                defaultSelectedKeys={['1']}
+                selectedKeys={[currentActive]}
+                style={{ backgroundColor: 'rgb(173 230 121 / 0.00)', borderRightWidth: 0 }}
+                defaultOpenKeys={['sub1']}
+                mode="inline"
+                className="h-full shadow-lg"
+            >
+                {menuItems.map(item => (
+                    <Menu.Item
+                        key={item.key}
+                        className="flex items-center group py-6"
+                        onClick={() => {
+                            setCurrentActive(item.key);
+                            router.push('/dashboard' + item.url)
+                        }} >
+                        <div className="flex gap-3 items-center">
+                            {item.icon}
+                            <span className={`text-base pt-0.5 ${currentActive === item.key ? 'font-bold' : 'font-medium'}`}>{item.title}</span>
+                        </div>
+                    </Menu.Item>
+                ))}
+            </Menu>
+            : <div className="w-full p-2 flex flex-col flex-1 gap-1">
+                <Skeleton.Button active block size="large" style={{padding : '1.4rem', borderRadius: '.65rem'}} />
+                <Skeleton.Button active block size="large" style={{padding : '1.4rem', borderRadius: '.65rem'}} />
+                <Skeleton.Button active block size="large" style={{padding : '1.4rem', borderRadius: '.65rem'}} />
+            </div>
     )
 }

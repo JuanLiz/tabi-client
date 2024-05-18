@@ -57,7 +57,7 @@ export default function RootLayout({
                 },
                 List: {
                   fontSize: 16,
-                }
+                },
               }
             }}
           >

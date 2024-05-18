@@ -89,7 +89,7 @@ export default function TopBar() {
         {
             key: '0',
             label: 'Perfil',
-            onClick: () => console.log('Profile')
+            onClick: () => user?.userTypeID === 1 ? window.location.href = '/dashboard/settings' : window.location.href = '/settings'
         },
         {
             key: '1',
@@ -108,7 +108,7 @@ export default function TopBar() {
                     </button>
                     <Image src={Logo} alt="Tabi Logo" height={28} />
                 </div>
-                <div className={`${pathname === '/onboarding' ? 'hidden lg:flex' : 'hidden'}`}>
+                <div className={`${pathname === '/onboarding' || pathname === '/settings' ? 'hidden lg:flex' : 'hidden'}`}>
                     <Image src={Logo} alt="Tabi Logo" height={40} />
                 </div>
 

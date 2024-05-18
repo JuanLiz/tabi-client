@@ -1,17 +1,19 @@
 'use client'
 
 import axiosInstance from "@/axiosInterceptor";
-import { Breadcrumb, Button, Descriptions, DescriptionsProps, List, Popconfirm } from "antd";
+import { Breadcrumb, Button, Descriptions, DescriptionsProps, List, Popconfirm, message } from "antd";
 import { useEffect, useState } from "react";
 
 
 import AddCropManagementModal from "@/components/modals/addCropManagementModal/addCropManagementModal";
 import { DeleteOutlined, EditOutlined, ExclamationCircleFilled, PlusOutlined } from '@ant-design/icons';
-import { HomeTwo, Leaves } from '@icon-park/react';
+import { ArrowLeft, HomeTwo, Leaves } from '@icon-park/react';
 import { AxiosResponse } from "axios";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 //Images
+import UpdateCropModal from "@/components/modals/updateCropModal/updateCropModal";
 import FertilizeIcon from '@/public/img/crop-management/bag-seedling.svg';
 import PlagueControlIcon from '@/public/img/crop-management/bugs.svg';
 import HarvestIcon from '@/public/img/crop-management/coffee-beans.svg';
@@ -20,6 +22,8 @@ import WateringIcon from '@/public/img/crop-management/raindrops.svg';
 import PlowIcon from '@/public/img/crop-management/shovel.svg';
 
 export default function CropsIdPage({ params }: { params: { id: string } }) {
+
+    const router = useRouter();
 
     const icons = [
         PlowIcon,
@@ -39,11 +43,16 @@ export default function CropsIdPage({ params }: { params: { id: string } }) {
     const [descriptionItems, setDescriptionItems] = useState<DescriptionsProps['items']>();
     const [cropManagementItems, setCropManagementItems] = useState<DescriptionsProps['items']>();
 
+    //Update crop modal visibility
+    const [updateCrop, setUpdateCrop] = useState(false);
+    const [isCropUpdated, setIsCropUpdated] = useState(false);
+
     // Add crop management visibility
     const [addCropManagement, setAddCropManagement] = useState(false);
     const [isCropManagementAdded, setIsCropManagementAdded] = useState(false);
 
-
+    // Message
+    const [messageApi, contextHolder] = message.useMessage();
 
     //=== API Methods ===//
     const getCrop = async () => {
@@ -92,6 +101,18 @@ export default function CropsIdPage({ params }: { params: { id: string } }) {
                     children: `${response.data.hectares} hectáreas`,
                 },
             ]);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    const deleteCrop = async () => {
+        try {
+            const response: AxiosResponse = await axiosInstance.delete(`/api/Crop/${cropId}`);
+            if (response.status === 204) {
+                message.success('Cultivo eliminado correctamente');
+                router.back();
+            }
         } catch (error) {
             console.error(error);
         }
@@ -162,14 +183,26 @@ export default function CropsIdPage({ params }: { params: { id: string } }) {
     useEffect(() => {
         if (isCropManagementAdded) {
             getCropManagement();
+            messageApi.success('Gestión registrada correctamente');
             setIsCropManagementAdded(false);
         }
     }, [isCropManagementAdded])
+
+    // Refresh page if crop is updated
+    useEffect(() => {
+        if (isCropUpdated) {
+            getCrop();
+            messageApi.success('Cultivo actualizado correctamente');
+            setIsCropUpdated(false);
+        }
+    }, [isCropUpdated])
 
 
 
     return (
         <div className="w-full flex flex-col gap-6 lg:gap-10">
+            {/* Context holder for messages */}
+            {contextHolder}
             <div className="flex flex-col w-full gap-3">
                 <Breadcrumb
                     items={[
@@ -200,14 +233,28 @@ export default function CropsIdPage({ params }: { params: { id: string } }) {
                     ]}
                 />
                 <div className="w-full flex flex-col lg:flex-row gap-6 justify-between lg:items-center">
-                    <h1 className="text-brown text-3xl lg:text-4xl font-extrabold">Cultivo #{crop?.cropID}</h1>
+                    <div className="flex gap-2 items-center">
+                        <ArrowLeft className="cursor-pointer" theme="outline" size="24" fill="rgb(65 47 38 / 0.5)" onClick={() => router.back()} />
+                        <h1 className="text-brown text-3xl lg:text-4xl font-extrabold">Cultivo #{crop?.cropID}</h1>
+                    </div>
                     <div className="flex flex-wrap lg:flex-nowrap gap-2">
-                        <Button type="default" size="large" icon={<EditOutlined />} block>
+                        <Button type="default" size="large" icon={<EditOutlined />} block onClick={() => setUpdateCrop(true)}>
                             <span>Editar información</span>
                         </Button>
-                        <Button type="default" size="large" icon={<DeleteOutlined />} block danger>
-                            <span>Eliminar cultivo</span>
-                        </Button>
+                        <Popconfirm
+                            icon={<ExclamationCircleFilled style={{ color: '#FF4D4F' }} />}
+                            placement="bottomRight"
+                            title={`¿Eliminar cultivo #${crop?.cropID}?`}
+                            description="Esta acción no se puede deshacer."
+                            onConfirm={() => deleteCrop()}
+                            okText='Eliminar cultivo'
+                            okButtonProps={{ danger: true }}
+                            cancelText="Cancelar"
+                        >
+                            <Button type="default" size="large" icon={<DeleteOutlined />} block danger>
+                                <span>Eliminar cultivo</span>
+                            </Button>
+                        </Popconfirm>
                     </div>
                 </div>
             </div>
@@ -233,23 +280,20 @@ export default function CropsIdPage({ params }: { params: { id: string } }) {
                     renderItem={(item, index) => (
                         <List.Item
                             key={index}
-                            actions={
-                                [
-
-                                    <Popconfirm
-                                        icon={<ExclamationCircleFilled style={{ color: '#FF4D4F' }} />}
-                                        placement="topRight"
-                                        title="¿Estás seguro de eliminar este registro?"
-                                        description="Esta acción no se puede deshacer."
-                                        onConfirm={() => deleteCropManagement(item.cropManagementID)}
-                                        okText="Eliminar registro"
-                                        okButtonProps={{ danger: true }}
-                                        cancelText="Cancelar"
-                                    >
-                                        <Button type="text" icon={<DeleteOutlined />} danger />
-                                    </Popconfirm>
-                                ]
-                            }
+                            actions={[
+                                <Popconfirm
+                                    icon={<ExclamationCircleFilled style={{ color: '#FF4D4F' }} />}
+                                    placement="topRight"
+                                    title="¿Estás seguro de eliminar este registro?"
+                                    description="Esta acción no se puede deshacer."
+                                    onConfirm={() => deleteCropManagement(item.cropManagementID)}
+                                    okText="Eliminar registro"
+                                    okButtonProps={{ danger: true }}
+                                    cancelText="Cancelar"
+                                >
+                                    <Button type="text" icon={<DeleteOutlined />} danger />
+                                </Popconfirm>
+                            ]}
                         >
                             <List.Item.Meta
                                 avatar={<Image className="pt-1" src={icons[item.cropManagementTypeID - 1]} alt="Crop Management Icon" width={24} height={24} />}
@@ -267,6 +311,17 @@ export default function CropsIdPage({ params }: { params: { id: string } }) {
                 setVisible={setAddCropManagement}
                 setIsCropManagementAdded={setIsCropManagementAdded}
             />
+
+            {
+                crop && (
+                    <UpdateCropModal
+                        crop={crop}
+                        visible={updateCrop}
+                        setVisible={setUpdateCrop}
+                        setIsCropUpdated={setIsCropUpdated}
+                    />
+                )
+            }
 
         </div>
     )

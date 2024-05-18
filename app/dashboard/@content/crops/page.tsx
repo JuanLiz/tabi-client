@@ -3,7 +3,7 @@
 import axiosInstance from "@/axiosInterceptor";
 import { DeleteOutlined, ExclamationCircleFilled, PlusOutlined } from '@ant-design/icons';
 import { Edit, MoreOne, Plus } from "@icon-park/react";
-import { Button, Collapse, CollapseProps, Dropdown, Form, FormProps, Input, Popconfirm, Select, Skeleton } from "antd";
+import { Button, Collapse, CollapseProps, Dropdown, Form, FormProps, Input, Popconfirm, Select, Skeleton, message } from "antd";
 import Cookies from 'js-cookie';
 import { useEffect, useState } from "react";
 
@@ -36,6 +36,9 @@ export default function CropsPage() {
     const [addCropLot, setAddCropLot] = useState<LotResponse>();
     const [isCropAdded, setIsCropAdded] = useState<boolean>(false);
 
+    // Message
+    const [messageApi, contextHolder] = message.useMessage();
+
 
     const confirm = () =>
         new Promise((resolve) => {
@@ -44,7 +47,6 @@ export default function CropsPage() {
 
     //=== API Methods ==//
     const getLots = async () => {
-        setLots(undefined);
         const res = await axiosInstance.get('/api/Lot?Filters=FarmID%3D%3D' + currentFarm);
         if (res.status === 200) {
             // Add crops to lots
@@ -83,17 +85,19 @@ export default function CropsPage() {
             const res = await axiosInstance.post('/api/Lot', createLotData);
             if (res.status === 201) {
                 getLots();
+                messageApi.success('Lote creado correctamente');
             }
             setCreateLotButtonLoading(false);
             setCreateLotVisible(false);
         } catch (err) {
             console.log(err);
+            messageApi.error('Ocurrió un error al crear el lote');
             setCreateLotButtonLoading(false);
         }
     }
 
     const updateLot = async (lot: LotResponse) => {
-
+        messageApi.success('Cultivo agregado correctamente');
         const editLotData: FormData = new FormData();
 
         editLotData.append('LotID', lot.lotID.toString());
@@ -106,8 +110,10 @@ export default function CropsPage() {
             if (res.status === 200) {
                 editLotForm.resetFields();
                 getLots();
+                messageApi.success('Lote actualizado correctamente');
             }
         } catch (err) {
+            messageApi.error('Ocurrió un error al actualizar el lote');
             console.log(err);
         }
     }
@@ -116,6 +122,7 @@ export default function CropsPage() {
         const res = await axiosInstance.delete('/api/Lot/' + lotID);
         if (res.status === 204) {
             getLots();
+            messageApi.success('Lote eliminado correctamente');
         }
     }
 
@@ -154,6 +161,7 @@ export default function CropsPage() {
     useEffect(() => {
         if (isCropAdded) {
             getLots();
+            messageApi.success('Cultivo agregado correctamente');
             setIsCropAdded(false);
         }
     }, [isCropAdded]);
@@ -257,7 +265,7 @@ export default function CropsPage() {
                     </div >
                 ),
                 children: (
-                    <div className="flex flex-wrap gap-2 items-center justify-center md:justify-start">
+                    <div className="w-auto flex flex-wrap gap-2 md:gap-4 items-center justify-center md:justify-center">
                         {lot.crops.map(crop => {
                             return (
                                 <CropCard key={crop.cropID} crop={crop} />
@@ -282,7 +290,8 @@ export default function CropsPage() {
 
     return (
         <div className="w-full flex flex-col lg:gap-6">
-
+            {/* Context holder for messages */}
+            {contextHolder}
             <div className="w-full flex flex-col lg:flex-row gap-6 justify-between lg:items-center">
                 <h1 className="text-brown text-3xl lg:text-4xl font-extrabold">Gestión de cultivos</h1>
                 <Popconfirm

@@ -3,19 +3,19 @@ import { Button, DatePicker, Form, Input, Modal, Select } from "antd";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 
-export default function AddCropModal({ lot, visible, setVisible, setIsCropAdded }
+export default function UpdateCropModal({ crop, visible, setVisible, setIsCropUpdated }
     : {
-        lot: LotResponse | undefined,
+        crop: CropResponse | undefined,
         visible: boolean,
         setVisible: React.Dispatch<React.SetStateAction<boolean>>,
-        setIsCropAdded: React.Dispatch<React.SetStateAction<boolean>>
+        setIsCropUpdated: React.Dispatch<React.SetStateAction<boolean>>
     }) {
 
     const [cropTypes, setCropTypes] = useState<CropType[]>();
     const [cropStates, setCropStates] = useState<CropState[]>();
 
-    const [addCropForm] = Form.useForm();
-    const [addCropButtonLoading, setAddCropButtonLoading] = useState(false);
+    const [updateCropForm] = Form.useForm();
+    const [updateCropButtonLoading, setUpdateCropButtonLoading] = useState(false);
 
     //== API Methods ==//
     const getCropTypes = async () => {
@@ -30,76 +30,84 @@ export default function AddCropModal({ lot, visible, setVisible, setIsCropAdded 
     const getCropStates = async () => {
         try {
             const response = await axiosInstance.get('/api/CropState');
-            setCropStates(response.data);
+            // Remove the 'Cosechado' state
+            setCropStates(response.data.filter((state: CropState) => state.name !== 'Cosechado'));
         } catch (error) {
             console.error(error);
         }
     }
 
-    const addCrop = async (values: any) => {
+    const updateCrop = async (values: any) => {
 
-        if (!lot) return;
-        setAddCropButtonLoading(true);
+        if (!crop) return;
+        setUpdateCropButtonLoading(true);
 
         const form: FormData = new FormData();
-        form.append('LotID', lot.lotID.toString());
+        form.append('CropID', crop.cropID.toString());
         form.append('Hectares', values.hectares);
         form.append('PlantingDate', values.plantingDate.format('YYYY-MM-DD'));
         form.append('CropTypeID', values.cropTypeID);
-        form.append('CropStateID', '1');
+        form.append('CropStateID', values.cropStateID);
 
         try {
-            const response = await axiosInstance.post('/api/Crop', form);
-            if (response.status === 201) {
-                // Add first crop management
-                const cropManagementForm: FormData = new FormData();
-                cropManagementForm.append('CropID', response.data.cropID);
-                cropManagementForm.append('CropManagementTypeID', '2');
-                cropManagementForm.append('Date', values.plantingDate.format('YYYY-MM-DD'));
-                cropManagementForm.append('Description', `Sembradas ${values.hectares} hectáreas de variedad ${cropTypes?.find(crop => crop.cropTypeID === values.cropTypeID)?.name}`);
-
-                try {
-                    const cropManagementResponse = await axiosInstance.post('/api/CropManagement', cropManagementForm);
-                    if (cropManagementResponse.status === 201) setIsCropAdded(true);
-                } catch (error) {
-                    console.error(error);
-                }
+            const response = await axiosInstance.put('/api/Crop', form);
+            if (response.status === 200) {
+                setIsCropUpdated(true);
+                updateCropForm.resetFields();
             }
 
         } catch (error) {
             console.error(error);
         } finally {
-            setAddCropButtonLoading(false);
+            setUpdateCropButtonLoading(false);
             handleCancel();
         }
     }
 
     const handleCancel = () => {
         setVisible(false);
-        addCropForm.resetFields();
     }
 
-    const onAddCropFinish = async (values: any) => {
-        addCrop(values);
+    const onUpdateCropFinish = async (values: any) => {
+        updateCrop(values);
     }
 
     useEffect(() => {
+        if (crop) {
+            updateCropForm.setFieldsValue({
+                hectares: crop.hectares,
+                plantingDate: dayjs(crop.plantingDate),
+                cropTypeID: crop.cropTypeID,
+                cropStateID: crop.cropStateID
+            });
+        }
         getCropTypes();
         getCropStates();
     }, []);
 
+    useEffect(() => {
+        if (crop) {
+            updateCropForm.setFieldsValue({
+                hectares: crop.hectares,
+                plantingDate: dayjs(crop.plantingDate),
+                cropTypeID: crop.cropTypeID,
+                cropStateID: crop.cropStateID
+            });
+        }
+    }, [crop]);
+
 
     return (
         <Modal
-            title={`Agregar cultivo a Lote ${lot?.name}`}
+            title={`Editar cultivo`}
             open={visible}
             footer={null}
             onCancel={handleCancel}
         >
             <Form
-                form={addCropForm}
+                form={updateCropForm}
                 layout="vertical"
-                onFinish={onAddCropFinish}
+                onFinish={onUpdateCropFinish}
                 style={{ margin: '1rem' }}
             >
                 <div className='md:flex w-full gap-5'>
@@ -115,6 +123,18 @@ export default function AddCropModal({ lot, visible, setVisible, setIsCropAdded 
                         />
                     </Form.Item>
                 </div>
+                <Form.Item label="Estado del cultivo" name="cropStateID" rules={[{ required: true, message: 'Selecciona el estado del cultivo' }]}>
+                    <Select
+                        loading={cropStates === undefined}
+                        disabled={cropStates === undefined}
+                        placeholder="Selecciona el estado">
+                        {
+                            cropStates?.map(state => (
+                                <Select.Option key={state.name} value={state.cropStateID}>{state.name}</Select.Option>
+                            ))
+                        }
+                    </Select>
+                </Form.Item>
                 <Form.Item label="Variedad de café" name="cropTypeID" rules={[{ required: true, message: 'Selecciona la variedad del café sembrado' }]}>
                     <Select
                         loading={cropTypes === undefined}
@@ -129,7 +149,7 @@ export default function AddCropModal({ lot, visible, setVisible, setIsCropAdded 
                 </Form.Item>
                 <div className="w-full flex justify-end gap-2 pt-2">
                     <Button type="default" onClick={handleCancel}>Cancelar</Button>
-                    <Button type="primary" htmlType="submit" loading={addCropButtonLoading}>Enviar</Button>
+                    <Button type="primary" htmlType="submit" loading={updateCropButtonLoading}>Enviar</Button>
                 </div>
             </Form>
         </Modal>
