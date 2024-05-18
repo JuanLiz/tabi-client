@@ -24,20 +24,21 @@ export default function TopBar() {
 
     const [farms, setFarms] = useState<FarmResponse[] | null>([]);
 
-    const [currentFarm, setCurrentFarm] = useState<number | undefined>(parseInt(Cookies.get('current_farm_id') || '0'));
+    const [currentFarm, setCurrentFarm] = useState<number>(Cookies.get('current_farm_id') ? parseInt(Cookies.get('current_farm_id') || '-1') : 0);
 
     const [menuOpen, setMenuOpen] = useState<boolean>(false);
+
+    const [reload, setReload] = useState<boolean>(false);
 
 
     //=== API Methods ===//
     const getFarms = async () => {
         try {
             const res: AxiosResponse<FarmResponse[]> = await axiosInstance.get("/api/Farm?Filters=UserID%3D%3D" + user?.userID);
-            console.log(res.data);
             setFarms(res.data);
-            if (res.data.length > 0
-                && res.data.includes(res.data.find(farm =>
-                    farm.farmID === currentFarm) || res.data[0])) {
+            // Check if current farm saved in cookies is in the list
+            if (!res.data.find(farm => farm.farmID === currentFarm)) {
+                console.log('Current farm not found in list');
                 setCurrentFarm(res.data[0].farmID);
             }
 
@@ -48,6 +49,7 @@ export default function TopBar() {
 
     const setFarm = (farmID: number) => {
         setCurrentFarm(farmID);
+        window.location.reload();
     }
 
     const logout = () => {
@@ -62,6 +64,8 @@ export default function TopBar() {
         // Set user cookies
         const userCookie = Cookies.get("user");
         if (userCookie) setUser(JSON.parse(userCookie));
+
+        // setCurrentFarm(parseInt(Cookies.get('current_farm_id') || '0'));
     }, []);
 
     useEffect(() => {
@@ -70,8 +74,7 @@ export default function TopBar() {
     }, [user]);
 
     useEffect(() => {
-        console.log('From TopBar', currentFarm);
-        if (currentFarm) Cookies.set("current_farm_id", currentFarm.toString());
+        Cookies.set("current_farm_id", currentFarm.toString());
     }, [currentFarm]);
 
 
@@ -114,7 +117,7 @@ export default function TopBar() {
 
                 {/* Farm dropdown */}
                 {
-                    user && farms && user.userTypeID === 1 && farms.length > 0 ?
+                    user && farms && farms.length > 0 && user.userTypeID === 1 ?
                         <Dropdown menu={{
                             items: [
                                 {
@@ -132,12 +135,12 @@ export default function TopBar() {
                                         key: farm.farmID.toString(),
                                         label: (<>{farm.name}</>),
                                         disabled: false, // Add the disabled property here
-                                        onClick: () => setFarm(farm.farmID),
+                                        onClick: () => { setFarm(farm.farmID) },
                                     }
                                 })
                             ),
                             selectable: true,
-                            defaultSelectedKeys: [currentFarm?.toString() || farms[0].farmID.toString()]
+                            defaultSelectedKeys: [currentFarm.toString() || farms[0].farmID.toString()]
                         }}
                             className='hidden lg:flex'
                             trigger={['click']}>

@@ -1,7 +1,8 @@
 'use client'
 
 import axiosInstance from "@/axiosInterceptor";
-import { Avatar, Button, Form, FormProps, Input, InputNumber, Modal, Select, Space, Table, TableProps, Tabs, TabsProps, Typography, message } from "antd";
+import { PlusOutlined } from '@ant-design/icons';
+import { Alert, Avatar, Button, Form, FormProps, Input, InputNumber, Modal, Popconfirm, Select, Space, Table, TableProps, Tabs, TabsProps, Typography, message } from "antd";
 import { AxiosResponse } from "axios";
 import Cookies from 'js-cookie';
 import { useEffect, useState } from "react";
@@ -60,8 +61,12 @@ export default function SettingsPage() {
     const [user, setUser] = useState<any | null>(Cookies.get('user') ? JSON.parse(Cookies.get('user') ?? '') : null);
     const [items, setItems] = useState<TabsProps['items']>();
 
-    // Farms table
+    // Create farm visible
+    const [createFarmForm] = Form.useForm();
+    const [createFarmVisible, setCreateFarmVisible] = useState(false);
+    const [createFarmButtonLoading, setCreateFarmButtonLoading] = useState(false);
 
+    // Farms table
     const [editFarmForm] = Form.useForm();
     const [farms, setFarms] = useState<FarmResponseExtend[]>([]);
     const [editingKey, setEditingKey] = useState<string>('');
@@ -221,6 +226,31 @@ export default function SettingsPage() {
         }
     }
 
+    const createFarm = async (values: Farm) => {
+
+        setCreateFarmButtonLoading(true);
+        const farmForm: FormData = new FormData();
+        farmForm.append('UserID', user?.userID.toString());
+        farmForm.append('Name', values.name);
+        farmForm.append('Address', values.address);
+        farmForm.append('Hectares', values.hectares.toString());
+
+        try {
+            const response = await axiosInstance.post('/api/Farm', farmForm);
+            if (response.status === 201) {
+                messageApi.success('Finca creada correctamente');
+                getFarms();
+            }
+        } catch (error) {
+            console.error('Failed:', error);
+            messageApi.error('Ocurrió un error al crear la finca');
+        } finally {
+            setCreateFarmButtonLoading(false);
+            setCreateFarmVisible(false);
+        }
+    }
+
+
     const updateFarm = async (values: FarmResponseExtend) => {
         console.log('values:', values);
         const farmForm: FormData = new FormData();
@@ -314,6 +344,13 @@ export default function SettingsPage() {
         getDocumentTypes();
     }, []);
 
+    // Clean form fields on create farm modal close
+    useEffect(() => {
+        if (!createFarmVisible) {
+            createFarmForm.resetFields();
+        }
+    }, [createFarmVisible]);
+
 
     return (
         <div className="w-full flex flex-col lg:gap-6">
@@ -355,6 +392,7 @@ export default function SettingsPage() {
                                 <Form
                                     layout="vertical"
                                     form={userForm}
+                                    size="middle"
                                     onFinish={onFinishForm}
                                     onFinishFailed={onFinishFailedForm}
                                     className="flex flex-col gap-4"
@@ -366,7 +404,7 @@ export default function SettingsPage() {
                                             <p className="text-brown/60 text-sm">Actualiza tu información personal</p>
                                         </div>
                                         <Form.Item className="hidden lg:flex">
-                                            <Button className='w-full mt-5' type="primary" htmlType="submit">
+                                            <Button className='w-full mt-5' type="primary" htmlType="submit" size="large">
                                                 Actualizar información
                                             </Button>
                                         </Form.Item>
@@ -485,8 +523,58 @@ export default function SettingsPage() {
                     </Tabs.TabPane>
                     <Tabs.TabPane tab="Fincas" key="2">
                         <div className="flex flex-col gap-6 py-4">
-                            <div className="flex flex-col gap-2">
-                                <h2 className="text-brown font-bold text-lg">Mis fincas</h2>
+                            <div className="w-full flex flex-col md:flex-row justify-between md:items-center gap-4">
+                                <div className="flex flex-col gap-2">
+                                    <h2 className="text-brown font-bold text-lg">Mis fincas</h2>
+                                    <p className="text-brown/60 text-sm">Gestiona la información de tus fincas</p>
+                                </div>
+                                <div className="w-full md:w-auto">
+                                    <Popconfirm
+                                        open={createFarmVisible}
+                                        title="Registra una nueva finca"
+                                        placement="left"
+                                        description={
+                                            <div className="w-full">
+                                                <Alert message={<span>Una vez creada, la finca no puede ser borrada. <br /> Verifica la información antes de enviar.</span>} type="warning" showIcon />
+                                                <Form
+                                                    form={createFarmForm}
+                                                    layout="vertical"
+                                                    onFinish={createFarm}
+                                                    style={{ margin: '1rem' }}
+                                                >
+                                                    <Form.Item label="Nombre" name="name" rules={[{ required: true, message: 'Ingresa un nombre' }]}>
+                                                        <Input type="text" />
+                                                    </Form.Item>
+                                                    <Form.Item label="Dirección" name="address" rules={[{ required: true, message: 'Ingresa una dirección' }]}>
+                                                        <Input type="text" />
+                                                    </Form.Item>
+                                                    <Form.Item label="Hectáreas" name="hectares" rules={[{ required: true, message: 'Ingresa las hectáreas' }]}>
+                                                        <Input type="number" />
+                                                    </Form.Item>
+                                                    <div className="w-full flex justify-end gap-2 pt-2">
+                                                        <Button type="default" onClick={() => setCreateFarmVisible(false)}>Cancelar</Button>
+                                                        <Button type="primary" htmlType="submit" loading={createFarmButtonLoading}>Enviar</Button>
+                                                    </div>
+                                                </Form>
+                                            </div>
+                                        }
+                                        icon={null}
+                                        cancelButtonProps={{ style: { display: 'none' } }}
+                                        okButtonProps={{ style: { display: 'none' } }}
+                                        onOpenChange={() => setCreateFarmVisible(!createFarmVisible)}
+                                    >
+                                        <Button type="primary" size="large" icon={<PlusOutlined />}
+                                            style={
+                                                {
+                                                    padding: '0 2rem',
+                                                    fontWeight: '500'
+                                                }
+                                            }
+                                            className="w-full">
+                                            Registrar finca
+                                        </Button>
+                                    </Popconfirm>
+                                </div>
                             </div>
 
                             <Form form={editFarmForm} component={false}>
