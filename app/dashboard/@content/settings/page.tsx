@@ -2,7 +2,7 @@
 
 import axiosInstance from "@/axiosInterceptor";
 import { PlusOutlined } from '@ant-design/icons';
-import { Alert, Avatar, Button, Form, FormProps, Input, InputNumber, Modal, Popconfirm, Select, Space, Table, TableProps, Tabs, TabsProps, Typography, message } from "antd";
+import { Alert, Avatar, Button, Form, FormProps, Input, InputNumber, Modal, Popconfirm, Select, Skeleton, Space, Table, TableProps, Tabs, TabsProps, Typography, message } from "antd";
 import { AxiosResponse } from "axios";
 import Cookies from 'js-cookie';
 import { useEffect, useState } from "react";
@@ -58,7 +58,7 @@ const EditableCell: React.FC<React.PropsWithChildren<EditableCellProps>> = ({
 export default function SettingsPage() {
 
 
-    const [user, setUser] = useState<any | null>(Cookies.get('user') ? JSON.parse(Cookies.get('user') ?? '') : null);
+    const [user, setUser] = useState<any | null>();
     const [items, setItems] = useState<TabsProps['items']>();
 
     // Create farm visible
@@ -173,7 +173,7 @@ export default function SettingsPage() {
     // Get user from API
     const getUser = async () => {
         try {
-            const { data } = await axiosInstance.get('/api/User/' + user?.userID);
+            const { data } = await axiosInstance.get('/api/User/' + JSON.parse(Cookies.get('user') ?? '').userID);
             setUser(data);
 
             userForm.setFieldsValue({
@@ -215,7 +215,7 @@ export default function SettingsPage() {
     // Get farms
     const getFarms = async () => {
         try {
-            const { data } = await axiosInstance.get('/api/Farm?Filters=UserID%3D%3D' + user?.userID);
+            const { data } = await axiosInstance.get('/api/Farm?Filters=UserID%3D%3D' + JSON.parse(Cookies.get('user') ?? '').userID);
             const farmsData: FarmResponseExtend[] = data.map((farm: FarmResponse) => ({
                 ...farm,
                 key: farm.farmID,
@@ -352,7 +352,7 @@ export default function SettingsPage() {
     }, [createFarmVisible]);
 
 
-    return (
+    return (user ? (
         <div className="w-full flex flex-col lg:gap-6">
             {/* Context holder for messages */}
             {contextHolder}
@@ -370,7 +370,6 @@ export default function SettingsPage() {
                                     <Avatar style={{ verticalAlign: 'middle', }} size={72}>
                                         <span className="text-brown font-semibold text-2xl">{user?.name?.charAt(0)?.toUpperCase()}</span>
                                         <span className="text-brown font-semibold text-2xl">{user?.lastName?.charAt(0)?.toUpperCase()}</span>
-
                                     </Avatar>
                                     <div>
                                         <h3 className="text-brown text-xl font-semibold ms-0.5">{user?.name} {user?.lastName}</h3>
@@ -649,5 +648,9 @@ export default function SettingsPage() {
             </Modal>
 
         </div>
+    ) : (
+        <Skeleton active/>
+    )
+
     );
 }
