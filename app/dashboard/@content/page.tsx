@@ -1,5 +1,5 @@
 export default function ContentPage() {
-    return <>
+    return <div className="hidden">
     Página de inicio
-    </>
+    </div>
 }

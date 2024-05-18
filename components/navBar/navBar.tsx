@@ -33,7 +33,7 @@ export default function NavBar() {
 
     useEffect(() => {
         const current = menuItems.find(item => pathname.includes(item.url));
-        setCurrentActive(current?.key || '1');
+        setCurrentActive(current?.key || '-1');
     }, [])
 
     return (

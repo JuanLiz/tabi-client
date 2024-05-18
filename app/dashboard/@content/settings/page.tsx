@@ -374,7 +374,7 @@ export default function SettingsPage() {
                                     </Avatar>
                                     <div>
                                         <h3 className="text-brown text-xl font-semibold ms-0.5">{user?.name} {user?.lastName}</h3>
-                                        <p className="text-brown text-sm ms-0.5">{user.username ? user.username : user.email}</p>
+                                        <p className="text-brown text-sm ms-0.5">{user?.username ? user.username : user.email}</p>
                                         <Button
                                             type="link"
                                             size="small"
@@ -521,7 +521,7 @@ export default function SettingsPage() {
                             </div>
                         </div>
                     </Tabs.TabPane>
-                    <Tabs.TabPane tab="Fincas" key="2">
+                    <Tabs.TabPane tab="Fincas" key="2" disabled={user.userTypeID === 2}>
                         <div className="flex flex-col gap-6 py-4">
                             <div className="w-full flex flex-col md:flex-row justify-between md:items-center gap-4">
                                 <div className="flex flex-col gap-2">

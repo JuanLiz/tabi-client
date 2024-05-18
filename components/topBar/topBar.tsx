@@ -117,7 +117,8 @@ export default function TopBar() {
 
                 {/* Farm dropdown */}
                 {
-                    user && farms && farms.length > 0 && user.userTypeID === 1 ?
+                    user && farms && farms.length > 0 && user.userTypeID === 1 && pathname !== '/onboarding'
+                        && pathname !== '/settings' ?
                         <Dropdown menu={{
                             items: [
                                 {
@@ -150,7 +151,8 @@ export default function TopBar() {
                                 <Sort theme='filled' size="1rem" fill="#412F26" />
                             </button>
                         </Dropdown>
-                        : user && farms && user.userTypeID === 1 && (<div className='hidden lg:flex'>
+                        : user && farms && user.userTypeID === 1 && pathname !== '/onboarding'
+                        && pathname !== '/settings' && (<div className='hidden lg:flex'>
                             <Skeleton.Button active />
                         </div>)
                 }
@@ -173,7 +175,8 @@ export default function TopBar() {
             <div className='flex gap-2 lg:gap-4'>
                 {/* Farm dropdown for small screens */}
                 {
-                    user && farms && user.userTypeID === 1 && farms.length > 0 ?
+                    user && farms && user.userTypeID === 1 && farms.length > 0 && pathname !== '/onboarding'
+                        && pathname !== '/settings' ?
                         <Dropdown menu={{
                             items: [
                                 {
@@ -206,7 +209,8 @@ export default function TopBar() {
                                 <Sort theme='filled' size="1rem" fill="#412F26" />
                             </button>
                         </Dropdown>
-                        : user && farms && user.userTypeID === 1 && (<div className='lg:hidden'>
+                        : user && farms && user.userTypeID === 1 && pathname !== '/onboarding'
+                        && pathname !== '/settings' && (<div className='lg:hidden'>
                             <Skeleton.Button active />
                         </div>)
                 }
