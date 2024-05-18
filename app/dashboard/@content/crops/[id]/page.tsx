@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 
 import AddCropManagementModal from "@/components/modals/addCropManagementModal/addCropManagementModal";
 import { DeleteOutlined, EditOutlined, ExclamationCircleFilled, PlusOutlined } from '@ant-design/icons';
-import { ArrowLeft, HomeTwo, Leaves } from '@icon-park/react';
+import { ArrowLeft, Calendar, HomeTwo, Leaves } from '@icon-park/react';
 import { AxiosResponse } from "axios";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -297,7 +297,22 @@ export default function CropsIdPage({ params }: { params: { id: string } }) {
                         >
                             <List.Item.Meta
                                 avatar={<Image className="pt-1" src={icons[item.cropManagementTypeID - 1]} alt="Crop Management Icon" width={24} height={24} />}
-                                title={<span className="font-bold">{item.cropManagementType?.name}</span>}
+                                title={
+                                    <div className="flex flex-wrap gap-2 items-center">
+                                        <span className="font-bold">{item.cropManagementType?.name}</span>
+                                        <div className="flex gap-1 items-center rounded-full border border-green bg-green-900/20 px-2 py-0.5">
+                                            <Calendar theme="filled" size="14" fill="#63A91F" />
+                                            <p className="text-green font-bold text-xs tracking-wider">
+                                                {item.date.toLocaleString(
+                                                    'es-CO', {
+                                                    year: 'numeric',
+                                                    month: 'long',
+                                                    day: 'numeric'
+                                                })}
+                                            </p>
+                                        </div>
+                                    </div>
+                                }
                                 description={item.description}
                             />
                         </List.Item>
