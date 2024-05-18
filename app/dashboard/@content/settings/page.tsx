@@ -649,8 +649,7 @@ export default function SettingsPage() {
 
         </div>
     ) : (
-        <Skeleton active/>
+        <Skeleton active />
     )
-
     );
 }

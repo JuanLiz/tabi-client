@@ -87,7 +87,7 @@ export default function CropsIdPage({ params }: { params: { id: string } }) {
                 },
                 {
                     key: '4',
-                    label: 'Fecha de cosecha',
+                    label: 'Fecha de última cosecha',
                     children: response.data.harvestDate ? response.data.harvestDate.toLocaleString(
                         'es-CO', {
                         year: 'numeric',
