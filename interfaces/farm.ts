@@ -7,5 +7,5 @@ interface Farm {
 interface FarmResponse extends Farm {
     userID: number;
     farmID: number;
-    user: UserResponse;
+    user?: UserResponse;
 }

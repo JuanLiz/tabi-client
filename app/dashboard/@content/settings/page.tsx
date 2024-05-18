@@ -1,10 +1,58 @@
 'use client'
 
 import axiosInstance from "@/axiosInterceptor";
-import { Avatar, Button, Form, FormProps, Input, Select, Space, Tabs, TabsProps } from "antd";
+import { Avatar, Button, Form, FormProps, Input, InputNumber, Modal, Select, Space, Table, TableProps, Tabs, TabsProps, Typography, message } from "antd";
 import { AxiosResponse } from "axios";
 import Cookies from 'js-cookie';
 import { useEffect, useState } from "react";
+
+
+interface FarmResponseExtend extends FarmResponse {
+    key: string;
+}
+
+interface EditableCellProps extends React.HTMLAttributes<HTMLElement> {
+    editing: boolean;
+    dataIndex: string;
+    title: any;
+    inputType: 'number' | 'text';
+    record: FarmResponseExtend;
+    index: number;
+}
+
+const EditableCell: React.FC<React.PropsWithChildren<EditableCellProps>> = ({
+    editing,
+    dataIndex,
+    title,
+    inputType,
+    record,
+    index,
+    children,
+    ...restProps
+}) => {
+    const inputNode = inputType === 'number' ? <InputNumber /> : <Input />;
+
+    return (
+        <td {...restProps}>
+            {editing ? (
+                <Form.Item
+                    name={dataIndex}
+                    style={{ margin: 0 }}
+                    rules={[
+                        {
+                            required: true,
+                            message: `Por favor, ingresa ${title}!`,
+                        },
+                    ]}
+                >
+                    {inputNode}
+                </Form.Item>
+            ) : (
+                children
+            )}
+        </td>
+    );
+};
 
 export default function SettingsPage() {
 
@@ -12,14 +60,108 @@ export default function SettingsPage() {
     const [user, setUser] = useState<any | null>(Cookies.get('user') ? JSON.parse(Cookies.get('user') ?? '') : null);
     const [items, setItems] = useState<TabsProps['items']>();
 
+    // Farms table
+
+    const [editFarmForm] = Form.useForm();
+    const [farms, setFarms] = useState<FarmResponseExtend[]>([]);
+    const [editingKey, setEditingKey] = useState<string>('');
+
+    const isEditing = (record: FarmResponseExtend) => record.key === editingKey;
+
+    const edit = (record: Partial<FarmResponseExtend> & { key: React.Key }) => {
+        editFarmForm.setFieldsValue({
+            name: '',
+            address: '',
+            hectares: 0,
+            ...record,
+        });
+        setEditingKey(record.key);
+    };
+
+    const cancel = () => {
+        setEditingKey('');
+    };
+
+    const save = async (key: React.Key) => {
+        try {
+            const row = (await editFarmForm.validateFields()) as FarmResponseExtend;
+            updateFarm(row);
+
+        } catch (errInfo) {
+            console.log('Validate Failed:', errInfo);
+        }
+    };
+
+    const columns = [
+        {
+            title: 'Nombre',
+            dataIndex: 'name',
+            width: '25%',
+            editable: true,
+        },
+        {
+            title: 'Dirección',
+            dataIndex: 'address',
+            width: '40%',
+            editable: true,
+        },
+        {
+            title: 'Hectáreas',
+            dataIndex: 'hectares',
+            width: '15%',
+            editable: true,
+        },
+        {
+            title: '',
+            dataIndex: 'operation',
+            render: (_: any, record: FarmResponseExtend) => {
+                const editable = isEditing(record);
+                return editable ? (
+                    <span>
+                        <Typography.Link onClick={() => save(record.key)} style={{ marginRight: 8 }}>
+                            Guardar
+                        </Typography.Link>
+                        <Typography.Link onClick={() => cancel()} >
+                            Cancelar
+                        </Typography.Link>
+                    </span>
+                ) : (
+                    <Typography.Link disabled={editingKey !== ''} onClick={() => edit(record)}>
+                        Editar
+                    </Typography.Link>
+                );
+            },
+        },
+    ];
+
+    const mergedColumns: TableProps['columns'] = columns.map((col) => {
+        if (!col.editable) {
+            return col;
+        }
+        return {
+            ...col,
+            onCell: (record: FarmResponseExtend) => ({
+                record,
+                inputType: col.dataIndex === 'hectares' ? 'number' : 'text',
+                dataIndex: col.dataIndex,
+                title: col.title,
+                editing: isEditing(record),
+            }),
+        };
+    });
+
+
     // Document types
     const [documentTypes, setDocumentTypes] = useState<DocType[]>([]);
 
-    const [form] = Form.useForm();
+    const [userForm] = Form.useForm();
 
     // Message
-    const [messageApi, setMessageApi] = useState<string | null>(null);
+    const [messageApi, contextHolder] = message.useMessage();
 
+    // Change password modal
+    const [changePasswordModalVisible, setChangePasswordModalVisible] = useState(false);
+    const [changePasswordForm] = Form.useForm();
 
     //=== API Methods ===//
 
@@ -29,7 +171,7 @@ export default function SettingsPage() {
             const { data } = await axiosInstance.get('/api/User/' + user?.userID);
             setUser(data);
 
-            form.setFieldsValue({
+            userForm.setFieldsValue({
                 name: data.name,
                 lastName: data.lastName,
                 email: data.email,
@@ -65,6 +207,42 @@ export default function SettingsPage() {
         }
     };
 
+    // Get farms
+    const getFarms = async () => {
+        try {
+            const { data } = await axiosInstance.get('/api/Farm?Filters=UserID%3D%3D' + user?.userID);
+            const farmsData: FarmResponseExtend[] = data.map((farm: FarmResponse) => ({
+                ...farm,
+                key: farm.farmID,
+            }));
+            setFarms(farmsData);
+        } catch (error) {
+            console.error('Failed:', error);
+        }
+    }
+
+    const updateFarm = async (values: FarmResponseExtend) => {
+        console.log('values:', values);
+        const farmForm: FormData = new FormData();
+        farmForm.append('FarmID', editingKey.toString());
+        farmForm.append('UserID', user?.userID.toString());
+        farmForm.append('Name', values.name);
+        farmForm.append('Address', values.address);
+        farmForm.append('Hectares', values.hectares.toString());
+
+        try {
+            const response = await axiosInstance.put('/api/Farm', farmForm);
+            if (response.status === 200) {
+                setEditingKey('');
+                messageApi.success('Información actualizada correctamente');
+                getFarms();
+            }
+        } catch (error) {
+            console.error('Failed:', error);
+            messageApi.error('Ocurrió un error al actualizar la información');
+        }
+    }
+
     // Update user
     const updateUser = async (values: UserResponse) => {
 
@@ -93,10 +271,12 @@ export default function SettingsPage() {
                     userTypeID: response.data.userTypeID,
                 }));
                 setUser(response.data);
+                messageApi.success('Información actualizada correctamente');
                 window.location.reload();
             }
         } catch (error) {
             console.error('Failed:', error);
+            messageApi.error('Ocurrió un error al actualizar la información');
         }
     }
 
@@ -104,14 +284,18 @@ export default function SettingsPage() {
 
         const passwordForm: FormData = new FormData();
 
-        passwordForm.append('UserID', user?.userID.toString() ?? '');
+        passwordForm.append('UserID', user?.userID.toString());
         passwordForm.append('Password', values.password);
 
         try {
-            const response = await axiosInstance.put('/api/User/', values);
+            const response = await axiosInstance.put('/api/User/', passwordForm);
             console.log('response:', response);
+            messageApi.success('Contraseña actualizada correctamente');
         } catch (error) {
             console.error('Failed:', error);
+        } finally {
+            setChangePasswordModalVisible(false);
+            changePasswordForm.resetFields();
         }
     }
 
@@ -126,16 +310,22 @@ export default function SettingsPage() {
 
     useEffect(() => {
         getUser();
+        getFarms();
         getDocumentTypes();
     }, []);
 
-    useEffect(() => {
-        if (user?.userType) {
-            setItems([
-                {
-                    key: '1',
-                    label: <span className="font-semibold">Perfil</span>,
-                    children: (
+
+    return (
+        <div className="w-full flex flex-col lg:gap-6">
+            {/* Context holder for messages */}
+            {contextHolder}
+            <div className="w-full flex flex-col lg:flex-row gap-6 justify-between lg:items-center">
+                <h1 className="text-brown text-3xl lg:text-4xl font-extrabold">Configuración</h1>
+            </div>
+
+            <div>
+                <Tabs defaultActiveKey="1" size="large">
+                    <Tabs.TabPane tab="Perfil" key="1">
                         <div className="flex flex-col gap-6 py-4">
                             <div className="flex flex-col gap-2">
                                 <h2 className="text-brown font-bold text-lg">Mi perfil</h2>
@@ -146,8 +336,16 @@ export default function SettingsPage() {
 
                                     </Avatar>
                                     <div>
-                                        <h3 className="text-brown text-xl font-semibold">{user?.name} {user?.lastName}</h3>
-                                        <p className="text-brown text-sm">{user.username ? user.username : user.email}</p>
+                                        <h3 className="text-brown text-xl font-semibold ms-0.5">{user?.name} {user?.lastName}</h3>
+                                        <p className="text-brown text-sm ms-0.5">{user.username ? user.username : user.email}</p>
+                                        <Button
+                                            type="link"
+                                            size="small"
+                                            style={{ padding: 0, margin: 0 }}
+                                            onClick={() => setChangePasswordModalVisible(true)}
+                                        >
+                                            Cambiar contraseña
+                                        </Button>
                                     </div>
                                 </div>
                             </div>
@@ -156,7 +354,7 @@ export default function SettingsPage() {
 
                                 <Form
                                     layout="vertical"
-                                    form={form}
+                                    form={userForm}
                                     onFinish={onFinishForm}
                                     onFinishFailed={onFinishFailedForm}
                                     className="flex flex-col gap-4"
@@ -284,29 +482,83 @@ export default function SettingsPage() {
                                 </Form>
                             </div>
                         </div>
-                    )
-                },
-                {
-                    key: '2',
-                    disabled: user.userTypeID === 2,
-                    label: <span className="font-semibold">Fincas</span>,
-                    children: <div>Cultivos</div>,
+                    </Tabs.TabPane>
+                    <Tabs.TabPane tab="Fincas" key="2">
+                        <div className="flex flex-col gap-6 py-4">
+                            <div className="flex flex-col gap-2">
+                                <h2 className="text-brown font-bold text-lg">Mis fincas</h2>
+                            </div>
 
-                }
-            ]);
-        }
-    }, [user, documentTypes])
-
-    return (
-        <div className="w-full flex flex-col lg:gap-6">
-
-            <div className="w-full flex flex-col lg:flex-row gap-6 justify-between lg:items-center">
-                <h1 className="text-brown text-3xl lg:text-4xl font-extrabold">Configuración</h1>
+                            <Form form={editFarmForm} component={false}>
+                                <Table
+                                    components={{
+                                        body: {
+                                            cell: EditableCell,
+                                        },
+                                    }}
+                                    bordered
+                                    dataSource={farms}
+                                    columns={mergedColumns}
+                                    rowClassName="editable-row"
+                                    pagination={{
+                                        onChange: cancel,
+                                    }}
+                                />
+                            </Form>
+                        </div>
+                    </Tabs.TabPane>
+                </Tabs>
             </div>
 
-            <div>
-                <Tabs defaultActiveKey="1" items={items} size="large" />
-            </div>
+            <Modal
+                title="Cambiar contraseña"
+                open={changePasswordModalVisible}
+                onCancel={() => setChangePasswordModalVisible(false)}
+                footer={null}
+            >
+                <Form
+                    layout="vertical"
+                    form={changePasswordForm}
+                    onFinish={changePassword}
+                    className="flex flex-col gap-4"
+                >
+                    <Form.Item
+                        label="Nueva contraseña"
+                        name="password"
+                        rules={[
+                            { required: true, message: 'Ingresa la nueva contraseña' },
+                            { min: 6, message: 'La contraseña debe tener al menos 6 caracteres' }
+                        ]}
+                    >
+                        <Input type="password" />
+                    </Form.Item>
+
+                    <Form.Item
+                        label="Confirmar contraseña"
+                        name="confirmPassword"
+                        rules={[
+                            { required: true, message: 'Confirma la nueva contraseña' },
+                            { min: 6, message: 'La contraseña debe tener al menos 6 caracteres' },
+                            ({ getFieldValue }) => ({
+                                validator(_, value) {
+                                    if (!value || getFieldValue('password') === value) {
+                                        return Promise.resolve();
+                                    }
+                                    return Promise.reject(new Error('Las contraseñas no coinciden'));
+                                },
+                            }),
+                        ]}
+                    >
+                        <Input type="password" />
+                    </Form.Item>
+
+                    <Form.Item>
+                        <Button type="primary" htmlType="submit">
+                            Cambiar contraseña
+                        </Button>
+                    </Form.Item>
+                </Form>
+            </Modal>
 
         </div>
     );
