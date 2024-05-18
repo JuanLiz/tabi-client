@@ -584,6 +584,7 @@ export default function SettingsPage() {
                                         },
                                     }}
                                     bordered
+                                    loading={farms.length === 0}
                                     dataSource={farms}
                                     columns={mergedColumns}
                                     rowClassName="editable-row"

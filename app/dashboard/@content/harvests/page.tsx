@@ -176,6 +176,7 @@ export default function HarvestsPage() {
                         },
                     }}
                     bordered
+                    loading={harvests.length === 0}
                     dataSource={harvests}
                     columns={mergedColumns}
                     rowClassName="editable-row"
