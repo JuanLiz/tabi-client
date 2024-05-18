@@ -283,6 +283,7 @@ export default function CropsIdPage({ params }: { params: { id: string } }) {
                             actions={[
                                 <Popconfirm
                                     icon={<ExclamationCircleFilled style={{ color: '#FF4D4F' }} />}
+                                    key={item.cropManagementID}
                                     placement="topRight"
                                     title="¿Estás seguro de eliminar este registro?"
                                     description="Esta acción no se puede deshacer."

@@ -374,7 +374,7 @@ export default function SettingsPage() {
                                     </Avatar>
                                     <div>
                                         <h3 className="text-brown text-xl font-semibold ms-0.5">{user?.name} {user?.lastName}</h3>
-                                        <p className="text-brown text-sm ms-0.5">{user?.username ? user.username : user.email}</p>
+                                        <p className="text-brown text-sm ms-0.5">{user?.username ? user?.username : user?.email}</p>
                                         <Button
                                             type="link"
                                             size="small"
@@ -433,12 +433,12 @@ export default function SettingsPage() {
                                         </div>
                                         <div className='md:flex w-full gap-5'>
                                             {
-                                                user.userTypeID === 1 ? (
+                                                user?.userTypeID === 1 ? (
                                                     <Form.Item label="Documento de identidad" className='md:w-1/2'>
                                                         <Space.Compact className='w-full'>
                                                             <Form.Item
                                                                 name='documentTypeID'
-                                                                rules={[{ required: user.userTypeID === 1, message: 'Selecciona el tipo de documento' }]}
+                                                                rules={[{ required: user?.userTypeID === 1, message: 'Selecciona el tipo de documento' }]}
                                                                 className='w-2/5 h-full'
                                                             >
                                                                 <Select
@@ -460,7 +460,7 @@ export default function SettingsPage() {
                                                             <Form.Item
                                                                 name={'documentNumber'}
                                                                 className='w-3/5 h-full'
-                                                                rules={[{ required: user.userTypeID === 1, message: 'Ingresa un número de documento válido' }]}
+                                                                rules={[{ required: user?.userTypeID === 1, message: 'Ingresa un número de documento válido' }]}
                                                             >
                                                                 <Input />
                                                             </Form.Item>
@@ -471,7 +471,7 @@ export default function SettingsPage() {
                                                         className='md:w-1/2'
                                                         label="Nombre de usuario"
                                                         name="username"
-                                                        rules={[{ required: user.userTypeID === 2, message: 'Por favor, ingresa un nombre de usuario' }]}
+                                                        rules={[{ required: user?.userTypeID === 2, message: 'Por favor, ingresa un nombre de usuario' }]}
                                                     >
                                                         <Input />
                                                     </Form.Item>
@@ -490,13 +490,13 @@ export default function SettingsPage() {
 
                                         </div>
 
-                                        {user.userTypeID === 1 && (
+                                        {user?.userTypeID === 1 && (
                                             <div className='md:flex w-full gap-5'>
                                                 <Form.Item
                                                     className='md:w-1/2'
                                                     label="Dirección"
                                                     name="address"
-                                                    rules={[{ required: user.userTypeID === 1, message: 'Por favor, ingresa tu dirección!' }]}
+                                                    rules={[{ required: user?.userTypeID === 1, message: 'Por favor, ingresa tu dirección!' }]}
                                                 >
                                                     <Input />
                                                 </Form.Item>
@@ -505,7 +505,7 @@ export default function SettingsPage() {
                                                     className='md:w-1/2'
                                                     label="Teléfono"
                                                     name="phone"
-                                                    rules={[{ required: user.userTypeID === 1, message: 'Por favor, ingresa tu teléfono!' }]}
+                                                    rules={[{ required: user?.userTypeID === 1, message: 'Por favor, ingresa tu teléfono!' }]}
                                                 >
                                                     <Input type='number' maxLength={10} />
                                                 </Form.Item>
@@ -521,7 +521,7 @@ export default function SettingsPage() {
                             </div>
                         </div>
                     </Tabs.TabPane>
-                    <Tabs.TabPane tab="Fincas" key="2" disabled={user.userTypeID === 2}>
+                    <Tabs.TabPane tab="Fincas" key="2" disabled={user?.userTypeID === 2}>
                         <div className="flex flex-col gap-6 py-4">
                             <div className="w-full flex flex-col md:flex-row justify-between md:items-center gap-4">
                                 <div className="flex flex-col gap-2">
