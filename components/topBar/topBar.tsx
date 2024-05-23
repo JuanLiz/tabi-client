@@ -152,9 +152,11 @@ export default function TopBar() {
                             </button>
                         </Dropdown>
                         : user && farms && user.userTypeID === 1 && pathname !== '/onboarding'
-                        && pathname !== '/settings' && (<div className='hidden lg:flex'>
-                            <Skeleton.Button active />
-                        </div>)
+                        && pathname !== '/settings' && (
+                            <div className='hidden lg:flex min-w-32'>
+                                <Skeleton.Button active block />
+                            </div>
+                        )
                 }
             </div>
 

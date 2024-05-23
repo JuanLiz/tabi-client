@@ -1,8 +1,8 @@
 'use client'
 
 import axiosInstance from "@/axiosInterceptor";
-import { PlusOutlined } from '@ant-design/icons';
-import { Alert, Avatar, Button, Form, FormProps, Input, InputNumber, Modal, Popconfirm, Select, Skeleton, Space, Table, TableProps, Tabs, TabsProps, Typography, message } from "antd";
+import { CheckOutlined, CloseOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
+import { Alert, Avatar, Button, Form, FormProps, Input, InputNumber, Modal, Popconfirm, Select, Skeleton, Space, Table, TableProps, Tabs, TabsProps, message } from "antd";
 import { AxiosResponse } from "axios";
 import Cookies from 'js-cookie';
 import { useEffect, useState } from "react";
@@ -118,22 +118,17 @@ export default function SettingsPage() {
         },
         {
             title: '',
+            width: '10%',
             dataIndex: 'operation',
             render: (_: any, record: FarmResponseExtend) => {
                 const editable = isEditing(record);
                 return editable ? (
                     <span>
-                        <Typography.Link onClick={() => save(record.key)} style={{ marginRight: 8 }}>
-                            Guardar
-                        </Typography.Link>
-                        <Typography.Link onClick={() => cancel()} >
-                            Cancelar
-                        </Typography.Link>
+                        <Button type="text" onClick={() => save(record.key)} style={{ marginRight: 8 }} icon={<CheckOutlined />} />
+                        <Button onClick={() => cancel()} type="text" icon={<CloseOutlined />} danger />
                     </span>
                 ) : (
-                    <Typography.Link disabled={editingKey !== ''} onClick={() => edit(record)}>
-                        Editar
-                    </Typography.Link>
+                    <Button type="text" onClick={() => edit(record)} style={{ marginRight: '.3rem' }} disabled={editingKey !== ''} icon={<EditOutlined />} />
                 );
             },
         },

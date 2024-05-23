@@ -7,6 +7,10 @@ interface Harvest {
 
 interface HarvestResponse extends Harvest {
     harvestID: number;
-    crop?: Crop;
+    crop?: CropResponse;
     harvestState?: HarvestState;
+}
+
+interface HarvestTable extends HarvestResponse {
+    lotName: string;
 }
