@@ -52,7 +52,6 @@ export async function middleware(request: NextRequest) {
         if (userValue && JSON.parse(userValue).userTypeID === 2)
             return NextResponse.redirect(new URL("/onboarding", request.nextUrl.origin));
 
-        console.log(request)
         const data = await fetch(
             `${request.nextUrl.origin}/api/Farm?Filters=UserID%3D%3D${userID}`,
             { headers: { Authorization: `Bearer ${token}` }, })
