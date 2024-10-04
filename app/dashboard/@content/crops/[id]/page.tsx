@@ -68,7 +68,7 @@ export default function CropsIdPage({ params }: { params: { id: string } }) {
                 {
                     key: '2',
                     label: 'Rendimiento esperado',
-                    children: `${response.data.cropType?.expectedYield} kg/planta`,
+                    children: `${response.data.cropType?.expectedYield} kg/ha`,
                 },
                 {
                     key: '6',
