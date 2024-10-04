@@ -1,6 +1,4 @@
 'use client'
-// Cloudflare const
-export const runtime = 'edge'
 
 import axiosInstance from "@/axiosInterceptor";
 import { Breadcrumb, Button, Descriptions, DescriptionsProps, List, Popconfirm, message } from "antd";
