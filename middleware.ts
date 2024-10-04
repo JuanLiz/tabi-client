@@ -52,8 +52,9 @@ export async function middleware(request: NextRequest) {
         if (userValue && JSON.parse(userValue).userTypeID === 2)
             return NextResponse.redirect(new URL("/onboarding", request.nextUrl.origin));
 
+        console.log(request)
         const data = await fetch(
-            `http://localhost:3000/api/Farm?Filters=UserID%3D%3D${userID}`,
+            `${request.nextUrl.origin}/api/Farm?Filters=UserID%3D%3D${userID}`,
             { headers: { Authorization: `Bearer ${token}` }, })
             .then((res) => res.json())
             .catch((err) => console.log(err));
@@ -72,7 +73,7 @@ export async function middleware(request: NextRequest) {
         if (userValue && JSON.parse(userValue).userTypeID === 2) return;
 
         const data = await fetch(
-            `http://localhost:3000/api/Farm?Filters=UserID%3D%3D${userID}`,
+            `${request.nextUrl.origin}/api/Farm?Filters=UserID%3D%3D${userID}`,
             { headers: { Authorization: `Bearer ${token}` }, })
             .then((res) => res.json())
             .catch((err) => console.log(err));
