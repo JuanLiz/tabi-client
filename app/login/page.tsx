@@ -67,6 +67,7 @@ export default function LoginPage() {
                 'Cédula de extranjería': 'CE',
                 'Tarjeta de identidad': 'TI',
                 'Pasaporte': 'PA',
+                'Permiso especial permanencia': 'PEP'
             };
             const docTypes = data.map((docType: DocType) => ({
                 ...docType,
@@ -403,7 +404,11 @@ export default function LoginPage() {
                                                 className='md:w-1/2'
                                                 label="Teléfono"
                                                 name="phone"
-                                                rules={[{ required: userType.name === 'Caficultor', message: 'Por favor, ingresa tu teléfono!' }]}
+                                                rules={[
+                                                    { required: userType.name === 'Caficultor', message: 'Por favor, ingresa tu teléfono!' },
+                                                    { min: 10, message: 'Ingresa un número de teléfono válido' },
+                                                    { max: 10, message: 'Ingresa un número de teléfono válido' }
+                                                ]}
                                             >
                                                 <Input type='number' maxLength={10} />
                                             </Form.Item>
